@@ -2,7 +2,7 @@
   "name": "Дневник пищевого поведения",
   "short_name": "Дневник",
   "description": "Осознанное наблюдение за голодом, эмоциями и вкусом",
-  "start_url": "./eddie_tracker_version9_pwa.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
