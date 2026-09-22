@@ -45,7 +45,7 @@ self.addEventListener('fetch', (event) => {
       })
       .catch(() => {
         if (event.request.mode === 'navigate') {
-          return caches.match('./eddie_tracker_version9_pwa.html');
+          return caches.match('./index.html');
         }
       })
   );
