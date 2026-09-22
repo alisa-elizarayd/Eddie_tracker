@@ -12,6 +12,10 @@
     --accent-soft: #e8efe8;
     --phys: #7fb069;
     --emo: #e08e6d;
+    --soc: #6b8bb8;
+    --sens: #d97ba8;
+    --habit: #9b7bb8;
+    --bored: #e8a54a;
     --text: #2c2c2c;
     --muted: #8a8a8a;
     --border: #e5e0d8;
@@ -22,6 +26,9 @@
     --sadness: #6b8bb8;
     --joy: #e8b84a;
     --love: #d97ba8;
+    --calm: #8ec9b8;
+    --interest: #e8a54a;
+    --pleasure: #d97bd9;
     --star: #f0b429;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -51,15 +58,32 @@
   .streak.big .fire { font-size: 22px; }
   .streak .fire { font-size: 18px; }
 
+  .backup-reminder {
+    display: none; margin-top: 12px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+    border: 1.5px solid #ffb74d; border-radius: 12px;
+    color: #8a4a0f; font-size: 13px; text-align: center;
+  }
+  .backup-reminder.show { display: block; }
+  .backup-reminder b { display: block; margin-bottom: 6px; font-size: 14px; }
+  .backup-reminder button {
+    background: #ff9800; color: white; border: none;
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 8px;
+  }
+
   .tabs {
     display: flex; gap: 4px; background: var(--card);
     border-radius: 12px; padding: 4px; margin-bottom: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    overflow-x: auto;
   }
   .tabs button {
-    flex: 1; padding: 10px 4px; border: none; background: transparent;
-    border-radius: 9px; font-size: 13px; font-weight: 500;
+    flex: 1; min-width: 90px; padding: 10px 6px; border: none; background: transparent;
+    border-radius: 9px; font-size: 12px; font-weight: 500;
     color: var(--muted); cursor: pointer; transition: all 0.2s;
+    white-space: nowrap;
   }
   .tabs button.active { background: var(--accent); color: white; }
 
@@ -98,6 +122,16 @@
   }
   .tag.selected::before { content: "✓ "; }
 
+  /* Многоточие: если вариантов много — показываем первые 12 */
+  .tags.collapsed .tag:nth-child(n+13) { display: none; }
+  .tags-more {
+    font-size: 12px; color: var(--accent);
+    cursor: pointer; margin-top: 8px;
+    display: inline-block; padding: 4px 10px;
+    background: var(--accent-soft); border-radius: 20px;
+  }
+  .tags-more:hover { background: #d5e3d5; }
+
   .emotion-tag {
     padding: 6px 12px; border-radius: 20px; font-size: 12px;
     cursor: pointer; border: 1.5px solid var(--border); background: white;
@@ -110,6 +144,9 @@
   .emotion-tag.selected[data-cat="sadness"] { background: var(--sadness); }
   .emotion-tag.selected[data-cat="joy"] { background: var(--joy); color: #5a4000; }
   .emotion-tag.selected[data-cat="love"] { background: var(--love); }
+  .emotion-tag.selected[data-cat="calm"] { background: var(--calm); color: #2a4a40; }
+  .emotion-tag.selected[data-cat="interest"] { background: var(--interest); color: #4a2f00; }
+  .emotion-tag.selected[data-cat="pleasure"] { background: var(--pleasure); }
 
   .emotion-category {
     margin-bottom: 10px; border: 1.5px solid var(--border);
@@ -137,19 +174,32 @@
   }
   .emotion-category.open .emotion-tags-wrap { display: flex; }
 
-  .hunger-type { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  /* Типы голода — теперь 6 карточек */
+  .hunger-type {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+  }
   @media (max-width: 500px) { .hunger-type { grid-template-columns: 1fr; } }
   .hunger-btn {
-    padding: 16px 14px; border: 2px solid var(--border); border-radius: 14px;
+    padding: 14px 12px; border: 2px solid var(--border); border-radius: 14px;
     background: #fdfcfa; cursor: pointer; text-align: left;
     transition: all 0.2s; position: relative;
   }
-  .hunger-btn strong { display: flex; align-items: center; gap: 6px; font-size: 14px; margin-bottom: 5px; }
-  .hunger-btn span { color: var(--muted); font-size: 12px; line-height: 1.4; }
+  .hunger-btn strong { display: flex; align-items: center; gap: 6px; font-size: 13px; margin-bottom: 4px; }
+  .hunger-btn span { color: var(--muted); font-size: 11px; line-height: 1.4; }
   .hunger-btn.selected.phys { border-color: var(--phys); background: #eef6ea; }
-  .hunger-btn.selected.phys::after { content:"✓"; position: absolute; top: 10px; right: 14px; color: var(--phys); font-weight: 700; }
+  .hunger-btn.selected.phys::after { content:"✓"; position: absolute; top: 8px; right: 12px; color: var(--phys); font-weight: 700; }
   .hunger-btn.selected.emo { border-color: var(--emo); background: #fbeee8; }
-  .hunger-btn.selected.emo::after { content:"✓"; position: absolute; top: 10px; right: 14px; color: var(--emo); font-weight: 700; }
+  .hunger-btn.selected.emo::after { content:"✓"; position: absolute; top: 8px; right: 12px; color: var(--emo); font-weight: 700; }
+  .hunger-btn.selected.soc { border-color: var(--soc); background: #e8eef6; }
+  .hunger-btn.selected.soc::after { content:"✓"; position: absolute; top: 8px; right: 12px; color: var(--soc); font-weight: 700; }
+  .hunger-btn.selected.sens { border-color: var(--sens); background: #fbeef6; }
+  .hunger-btn.selected.sens::after { content:"✓"; position: absolute; top: 8px; right: 12px; color: var(--sens); font-weight: 700; }
+  .hunger-btn.selected.habit { border-color: var(--habit); background: #f4eefa; }
+  .hunger-btn.selected.habit::after { content:"✓"; position: absolute; top: 8px; right: 12px; color: var(--habit); font-weight: 700; }
+  .hunger-btn.selected.bored { border-color: var(--bored); background: #fdf4e6; }
+  .hunger-btn.selected.bored::after { content:"✓"; position: absolute; top: 8px; right: 12px; color: var(--bored); font-weight: 700; }
 
   .slider-block { margin-bottom: 18px; }
   .slider-block:last-child { margin-bottom: 0; }
@@ -199,7 +249,6 @@
     display: flex; justify-content: space-between;
     font-size: 10px; color: var(--muted); margin-top: 6px; padding: 0 4px;
   }
-
   input[type="range"].satiety-slider {
     background: linear-gradient(to right,
       #c0392b 0%, #e67e22 25%, #f1c40f 50%,
@@ -210,10 +259,7 @@
     display: flex; gap: 6px; font-size: 32px;
     cursor: pointer; user-select: none;
   }
-  .stars .star {
-    color: #e0dbd0; transition: all 0.15s;
-    line-height: 1;
-  }
+  .stars .star { color: #e0dbd0; transition: all 0.15s; line-height: 1; }
   .stars .star:hover { transform: scale(1.15); }
   .stars .star.active { color: var(--star); text-shadow: 0 2px 6px rgba(240,180,41,0.4); }
 
@@ -234,6 +280,9 @@
   .selected-summary .chip[data-cat="sadness"] { background: var(--sadness); }
   .selected-summary .chip[data-cat="joy"] { background: var(--joy); color: #5a4000; }
   .selected-summary .chip[data-cat="love"] { background: var(--love); }
+  .selected-summary .chip[data-cat="calm"] { background: var(--calm); color: #2a4a40; }
+  .selected-summary .chip[data-cat="interest"] { background: var(--interest); color: #4a2f00; }
+  .selected-summary .chip[data-cat="pleasure"] { background: var(--pleasure); }
   .selected-summary .chip[data-cat="event"] { background: #8a7f6b; }
   .selected-summary .chip[data-cat="action"] { background: #6b8bb8; }
 
@@ -268,7 +317,6 @@
   .actions { display: flex; gap: 12px; margin-top: 20px; }
   .actions .btn-primary { flex: 1; }
 
-  /* ==== панель экспорта ==== */
   .export-panel {
     display: flex; align-items: center; gap: 8px;
     padding: 12px; background: #fdfcfa;
@@ -296,27 +344,28 @@
   .export-panel .btn-export.txt:hover { background: #6f6553; }
   .export-panel .btn-export.md { background: #6b8bb8; }
   .export-panel .btn-export.md:hover { background: #4f6f9c; }
+  .export-panel .btn-export.json { background: #d97b4a; }
+  .export-panel .btn-export.json:hover { background: #b86434; }
 
-  /* ==== ЗАПИСИ — вид как в Елене 4 ==== */
   .entry {
-    background: var(--card);
-    border-radius: 12px;
-    padding: 16px 16px 16px 48px;
-    margin-bottom: 10px;
+    background: var(--card); border-radius: 12px;
+    padding: 16px 16px 16px 48px; margin-bottom: 10px;
     border-left: 5px solid var(--phys);
     box-shadow: 0 1px 6px rgba(0,0,0,0.04);
-    position: relative;
-    transition: background 0.2s;
+    position: relative; transition: background 0.2s;
   }
   .entry.emo { border-left-color: var(--emo); }
+  .entry.soc { border-left-color: var(--soc); }
+  .entry.sens { border-left-color: var(--sens); }
+  .entry.habit { border-left-color: var(--habit); }
+  .entry.bored { border-left-color: var(--bored); }
   .entry.selected-for-export {
     background: #f4f9f4;
     box-shadow: 0 0 0 2px var(--accent), 0 2px 8px rgba(107,142,107,0.15);
   }
   .entry-checkbox {
     position: absolute; top: 18px; left: 14px;
-    width: 22px; height: 22px; accent-color: var(--accent);
-    cursor: pointer;
+    width: 22px; height: 22px; accent-color: var(--accent); cursor: pointer;
   }
   .entry-head {
     display: flex; justify-content: space-between;
@@ -336,8 +385,12 @@
   .entry-chips .chip[data-cat="sadness"] { background: var(--sadness); }
   .entry-chips .chip[data-cat="joy"] { background: var(--joy); color: #5a4000; }
   .entry-chips .chip[data-cat="love"] { background: var(--love); }
+  .entry-chips .chip[data-cat="calm"] { background: var(--calm); color: #2a4a40; }
+  .entry-chips .chip[data-cat="interest"] { background: var(--interest); color: #4a2f00; }
+  .entry-chips .chip[data-cat="pleasure"] { background: var(--pleasure); }
   .entry-chips .chip[data-cat="event"] { background: #8a7f6b; }
   .entry-chips .chip[data-cat="action"] { background: #6b8bb8; }
+  .entry-chips .chip[data-cat="food"] { background: #c9b8a0; color: #3a2f1f; }
 
   .mini-scales {
     display: flex; gap: 10px; margin: 8px 0;
@@ -408,6 +461,73 @@
     padding-left: 10px; color: white; font-size: 12px; font-weight: 600;
   }
 
+  .backup-status {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px; background: #fdfcfa;
+    border-radius: 12px; border: 1.5px solid var(--border);
+    margin-bottom: 14px;
+  }
+  .backup-status .icon { font-size: 34px; line-height: 1; }
+  .backup-status .text { flex: 1; }
+  .backup-status .text b { display: block; font-size: 14px; margin-bottom: 3px; }
+  .backup-status .text span { font-size: 12px; color: var(--muted); }
+  .backup-status .dot-status {
+    display: inline-block; width: 10px; height: 10px;
+    border-radius: 50%; margin-right: 6px;
+  }
+  .backup-status .dot-status.ok { background: #7fb069; }
+  .backup-status .dot-status.warn { background: #ffb74d; }
+  .backup-status .dot-status.bad { background: #d97b7b; }
+
+  .backup-actions {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px;
+  }
+  @media (max-width: 500px) { .backup-actions { grid-template-columns: 1fr; } }
+  .backup-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 16px; background: #fdfcfa;
+    border: 1.5px solid var(--border); border-radius: 12px;
+    cursor: pointer; transition: all 0.2s; text-align: left;
+  }
+  .backup-btn:hover { border-color: var(--accent); background: #f4f9f4; }
+  .backup-btn .bi { font-size: 24px; }
+  .backup-btn .bt b { display: block; font-size: 14px; margin-bottom: 2px; }
+  .backup-btn .bt span { font-size: 11px; color: var(--muted); }
+
+  .backup-history {
+    margin-top: 14px; padding: 14px;
+    background: #fdfcfa; border-radius: 12px;
+    border: 1.5px solid var(--border);
+  }
+  .backup-history h3 { font-size: 13px; color: var(--accent); margin-bottom: 10px; }
+  .backup-history .history-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; border-bottom: 1px dashed var(--border);
+    font-size: 13px;
+  }
+  .backup-history .history-item:last-child { border-bottom: none; }
+  .backup-history .hi-icon { font-size: 16px; }
+  .backup-history .hi-date { flex: 1; color: var(--text); }
+  .backup-history .hi-meta { font-size: 11px; color: var(--muted); }
+
+  .import-options {
+    display: none; margin-top: 12px;
+    padding: 14px; background: #fff8e1;
+    border: 1.5px solid #ffb74d; border-radius: 12px;
+  }
+  .import-options.show { display: block; }
+  .import-options h4 { font-size: 13px; color: #8a4a0f; margin-bottom: 10px; }
+  .import-options .io-btn {
+    display: block; width: 100%; padding: 12px;
+    margin-bottom: 8px; text-align: left;
+    background: white; border: 1.5px solid var(--border);
+    border-radius: 10px; cursor: pointer; font-size: 13px;
+    transition: all 0.2s;
+  }
+  .import-options .io-btn:hover { border-color: var(--accent); }
+  .import-options .io-btn b { display: block; margin-bottom: 3px; }
+  .import-options .io-btn span { color: var(--muted); font-size: 12px; }
+
   .cheat h3 { font-size: 14px; color: var(--accent); margin: 18px 0 8px; }
   .cheat ul { padding-left: 20px; font-size: 13px; }
   .cheat li { margin-bottom: 4px; }
@@ -422,6 +542,8 @@
     box-shadow: 0 4px 16px rgba(0,0,0,0.2);
   }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.warn { background: #ff9800; }
+  .toast.err { background: #d97b7b; }
 
   .step-indicator { display: flex; gap: 4px; margin-bottom: 16px; }
   .step-indicator .step-dot {
@@ -429,7 +551,6 @@
   }
   .step-indicator .step-dot.done { background: var(--accent); }
 
-  /* ==== автосохранение ==== */
   .autosave-hint {
     font-size: 11px; color: var(--muted);
     text-align: center; padding: 8px;
@@ -441,7 +562,6 @@
   }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-  /* ==== дата/время ==== */
   .datetime-row {
     display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px;
   }
@@ -454,7 +574,6 @@
   }
   .datetime-field input:focus { outline: none; border-color: var(--accent); }
 
-  /* ==== печать ==== */
   @media print {
     body > *:not(#printArea) { display: none !important; }
     #printArea { display: block !important; }
@@ -500,6 +619,10 @@
   }
   #printArea .print-entry-title .badge.phys { background: #7fb069; }
   #printArea .print-entry-title .badge.emo { background: #e08e6d; }
+  #printArea .print-entry-title .badge.soc { background: #6b8bb8; }
+  #printArea .print-entry-title .badge.sens { background: #d97ba8; }
+  #printArea .print-entry-title .badge.habit { background: #9b7bb8; }
+  #printArea .print-entry-title .badge.bored { background: #e8a54a; color: #4a2f00; }
   #printArea .print-entry-date {
     font-size: 10pt; color: #777;
     font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -535,6 +658,9 @@
   #printArea .print-chip.sadness { background: #6b8bb8; }
   #printArea .print-chip.joy { background: #e8b84a; color: #5a4000; }
   #printArea .print-chip.love { background: #d97ba8; }
+  #printArea .print-chip.calm { background: #8ec9b8; color: #2a4a40; }
+  #printArea .print-chip.interest { background: #e8a54a; color: #4a2f00; }
+  #printArea .print-chip.pleasure { background: #d97bd9; }
   #printArea .print-chip.event { background: #8a7f6b; }
   #printArea .print-chip.action { background: #6b8bb8; }
   #printArea .print-chip.food { background: #c9b8a0; color: #3a2f1f; }
@@ -557,13 +683,19 @@
   <h1>🌿 Дневник пищевого поведения</h1>
   <p>Осознанное наблюдение за голодом, эмоциями и вкусом</p>
   <div class="streak" id="streakBadge"><span class="fire">🔥</span> <span id="streakNum">0</span> дней подряд</div>
+  <div class="backup-reminder" id="backupReminder">
+    <b>⚠️ Пора сделать бэкап!</b>
+    <div id="backupReminderText">Прошло больше 7 дней с последнего сохранения.</div>
+    <button onclick="switchTabAndScroll('backup')">Перейти к бэкапам</button>
+  </div>
 </header>
 
 <div class="tabs">
   <button class="active" onclick="switchTab('form', this)">✏️ Запись</button>
   <button onclick="switchTab('list', this)">📖 Дневник</button>
   <button onclick="switchTab('stats', this)">📊 Статистика</button>
-  <button onclick="switchTab('cheat', this)">💡 Шпаргалка</button>
+  <button onclick="switchTab('backup', this)">💾 Бэкапы</button>
+  <button onclick="switchTab('cheat', this)">💡 Помощь</button>
 </div>
 
 <!-- ============ ФОРМА ============ -->
@@ -585,17 +717,30 @@
 
   <div class="card">
     <h2>🍽️ Что за приём пищи</h2>
+
     <div class="tag-label">Тип приёма</div>
     <div class="tags" id="mealTags"></div>
 
+    <div class="tag-label">Время приёма <span class="hint">когда примерно</span></div>
+    <div class="tags" id="mealTimeTags"></div>
+
+    <div class="tag-label">Размер порции</div>
+    <div class="tags" id="portionTags"></div>
+
+    <div class="tag-label">Тип блюда <span class="hint">можно несколько</span></div>
+    <div class="tags" id="dishTags"></div>
+
     <div class="tag-label">Где ела</div>
-    <div class="tags" id="placeTags"></div>
+    <div class="tags collapsed" id="placeTags"></div>
+    <span class="tags-more" onclick="expandTags('placeTags', this)">▼ Показать все места</span>
 
     <div class="tag-label">С кем ела</div>
-    <div class="tags" id="withTags"></div>
+    <div class="tags collapsed" id="withTags"></div>
+    <span class="tags-more" onclick="expandTags('withTags', this)">▼ Показать все варианты</span>
 
     <div class="tag-label">Что было на фоне</div>
-    <div class="tags" id="contextTags"></div>
+    <div class="tags collapsed" id="contextTags"></div>
+    <span class="tags-more" onclick="expandTags('contextTags', this)">▼ Показать все варианты</span>
 
     <div class="tag-label">Что съела (кратко)</div>
     <textarea id="food" placeholder="2 яйца, салат, тост с сыром, кофе..."></textarea>
@@ -613,11 +758,17 @@
     <div class="tag-label">Основной вкус</div>
     <div class="tags" id="tasteTags"></div>
 
+    <div class="tag-label">Дополнительные вкусы <span class="hint">можно несколько</span></div>
+    <div class="tags" id="extraTasteTags"></div>
+
     <div class="tag-label">Температура</div>
     <div class="tags" id="temperatureTags"></div>
 
     <div class="tag-label">Скорость еды</div>
     <div class="tags" id="speedTags"></div>
+
+    <div class="tag-label">Ощущение после еды</div>
+    <div class="tags" id="afterFeelingTags"></div>
 
     <div class="tag-label" style="margin-top:18px">⭐ Оценка вкуса</div>
     <div class="stars" id="tasteStars">
@@ -631,7 +782,7 @@
   </div>
 
   <div class="card">
-    <h2>🧭 Какой это был голод</h2>
+    <h2>🧭 Какой это был голод <span class="badge">выбери один</span></h2>
     <div class="hunger-type">
       <button class="hunger-btn phys" data-type="phys" onclick="selectHunger('phys', this)">
         <strong>🟢 Физиологический</strong>
@@ -640,6 +791,22 @@
       <button class="hunger-btn emo" data-type="emo" onclick="selectHunger('emo', this)">
         <strong>🟠 Эмоциональный</strong>
         <span>В груди/горле, резко, тянет на конкретное, не проходит после еды</span>
+      </button>
+      <button class="hunger-btn soc" data-type="soc" onclick="selectHunger('soc', this)">
+        <strong>🔵 Социальный</strong>
+        <span>«За компанию» — ем, потому что едят другие. Даже если не голодна</span>
+      </button>
+      <button class="hunger-btn sens" data-type="sens" onclick="selectHunger('sens', this)">
+        <strong>🩷 Сенсорный</strong>
+        <span>Хочу конкретный вкус, текстуру, запах. Не голод, а желание ощущения</span>
+      </button>
+      <button class="hunger-btn habit" data-type="habit" onclick="selectHunger('habit', this)">
+        <strong>🟣 По привычке</strong>
+        <span>«Пора есть» — по расписанию, ритуалу, времени суток. Без сигналов тела</span>
+      </button>
+      <button class="hunger-btn bored" data-type="bored" onclick="selectHunger('bored', this)">
+        <strong>🟡 От скуки</strong>
+        <span>Нечего делать, занять руки/рот, «поиск развлечения» через еду</span>
       </button>
     </div>
   </div>
@@ -702,11 +869,11 @@
       <span class="empty-hint">Эмоции пока не выбраны</span>
     </div>
 
-    <div class="tag-label" style="margin-top:14px">Что происходило (события)</div>
-    <div class="tags" id="eventTags"></div>
+    <div class="tag-label" style="margin-top:14px">📅 Что происходило <span class="hint">можно несколько</span></div>
+    <div id="eventCategories"></div>
 
-    <div class="tag-label" style="margin-top:14px">Что сделала ещё</div>
-    <div class="tags" id="actionTags"></div>
+    <div class="tag-label" style="margin-top:14px">🎯 Что я ещё сделала <span class="hint">можно несколько</span></div>
+    <div id="actionCategories"></div>
 
     <label class="checkbox-line" style="margin-top:16px">
       <input type="checkbox" id="overeat">
@@ -738,7 +905,8 @@
       <button class="btn-soft" onclick="deselectAll()">⬜ Снять все</button>
       <button class="btn-export" onclick="exportPDF()">📄 PDF</button>
       <button class="btn-export txt" onclick="exportTXT()">📃 TXT</button>
-      <button class="btn-export md" onclick="exportMD()">📝 Markdown</button>
+      <button class="btn-export md" onclick="exportMD()">📝 MD</button>
+      <button class="btn-export json" onclick="exportJSON()">💾 JSON</button>
     </div>
 
     <div id="entriesList"></div>
@@ -755,27 +923,86 @@
   </div>
 </div>
 
-<!-- ============ ШПАРГАЛКА ============ -->
+<!-- ============ БЭКАПЫ ============ -->
+<div id="tab-backup" class="hidden">
+  <div class="card">
+    <h2>💾 Защита данных</h2>
+
+    <div class="backup-status" id="backupStatus">
+      <div class="icon">🔒</div>
+      <div class="text">
+        <b id="backupStatusTitle">Проверка...</b>
+        <span id="backupStatusText">—</span>
+      </div>
+    </div>
+
+    <div class="backup-actions">
+      <div class="backup-btn" onclick="exportJSON()">
+        <span class="bi">📥</span>
+        <span class="bt">
+          <b>Скачать бэкап</b>
+          <span>Сохранить все записи в файл .json</span>
+        </span>
+      </div>
+      <div class="backup-btn" onclick="triggerImport()">
+        <span class="bi">📤</span>
+        <span class="bt">
+          <b>Восстановить из файла</b>
+          <span>Загрузить записи из .json</span>
+        </span>
+      </div>
+    </div>
+
+    <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="handleImportFile(event)">
+
+    <div class="import-options" id="importOptions">
+      <h4>📂 Как восстановить данные?</h4>
+      <button class="io-btn" onclick="applyImport('replace')">
+        <b>🔄 Заменить все</b>
+        <span>Удалить текущие записи и загрузить только из файла</span>
+      </button>
+      <button class="io-btn" onclick="applyImport('merge')">
+        <b>➕ Добавить к текущим</b>
+        <span>Оставить текущие записи и добавить недостающие из файла (без дублей)</span>
+      </button>
+      <button class="io-btn" onclick="cancelImport()" style="background:#f0ece4">
+        <b>❌ Отмена</b>
+        <span>Ничего не менять</span>
+      </button>
+    </div>
+
+    <div class="backup-history" id="backupHistory">
+      <h3>📜 История бэкапов</h3>
+      <div id="backupHistoryList"></div>
+    </div>
+
+    <div style="margin-top:18px;padding:14px;background:#fff8e1;border:1.5px solid #ffb74d;border-radius:12px;font-size:12px;color:#8a4a0f">
+      <b>⚠️ Важно помнить:</b><br>
+      Данные хранятся в браузере (localStorage) и привязаны к адресу сайта.<br>
+      Они <b>не синхронизируются</b> между устройствами. Регулярно делайте бэкап →
+    </div>
+  </div>
+</div>
+
+<!-- ============ ПОМОЩЬ ============ -->
 <div id="tab-cheat" class="hidden">
   <div class="card cheat">
-    <h2>💡 Шпаргалка</h2>
-    <h3>🟢 Физиологический голод</h3>
+    <h2>💡 Помощь</h2>
+    <h3>🧭 6 типов голода</h3>
     <ul>
-      <li>В области живота, нарастает постепенно</li>
-      <li>Через 3-4 часа после еды</li>
-      <li>Утоляется любой едой</li>
+      <li><b>🟢 Физиологический</b> — в животе, нарастает постепенно, через 3-4 ч после еды</li>
+      <li><b>🟠 Эмоциональный</b> — в груди/горле, резко, тянет на конкретное</li>
+      <li><b>🔵 Социальный</b> — за компанию, даже если не голодна</li>
+      <li><b>🩷 Сенсорный</b> — хочу конкретный вкус/текстуру/запах</li>
+      <li><b>🟣 По привычке</b> — «пора есть», ритуал, время суток</li>
+      <li><b>🟡 От скуки</b> — занять руки/рот, развлечение</li>
     </ul>
-    <h3>🟠 Эмоциональный голод</h3>
-    <ul>
-      <li>В груди и горле, возникает резко</li>
-      <li>Тянет на конкретную калорийную еду</li>
-      <li>Не проходит при физическом насыщении</li>
-    </ul>
-    <h3>🔍 Что делать при эмоциональном голоде</h3>
+    <h3>🔍 Что делать при не-физиологическом голоде</h3>
     <ul>
       <li>Спросить: где локализация? сколько прошло с еды?</li>
       <li>Выпить стакан воды</li>
       <li>Спросить: что я чувствую? какая потребность за эмоцией?</li>
+      <li>Спросить: чем ещё я могу закрыть эту потребность?</li>
     </ul>
     <h3>🍽️ Осознанное eating</h3>
     <ul>
@@ -783,6 +1010,13 @@
       <li>Есть медленно, чувствовать текстуру, запах, вкус</li>
       <li>Оценить — вкусно ли? хочется ли ещё?</li>
       <li>Остановиться на «сыта», а не «переполнена»</li>
+    </ul>
+    <h3>💾 О бэкапах</h3>
+    <ul>
+      <li>Дневник хранится в браузере, не в облаке</li>
+      <li>Раз в 7 дней — вкладка «💾 Бэкапы» → «Скачать бэкап»</li>
+      <li>Файл сохраните в надёжное место (облако, флешка)</li>
+      <li>Для восстановления — «Восстановить из файла»</li>
     </ul>
     <h3>🛡️ Работа с сопротивлением</h3>
     <ul>
@@ -799,62 +1033,226 @@
 <div id="printArea"></div>
 
 <script>
-/* ============ СПРАВОЧНИКИ ============ */
-const MEALS = ["Завтрак","Обед","Ужин","Перекус","Ночной дожор"];
-const PLACES = ["Кухня","Гостиная","Рабочий стол","Кафе","В гостях","В машине","На ходу","В постели"];
-const WITH = ["Одна","С семьёй","С партнёром","С детьми","С коллегами","С друзьями","С родителями"];
-const CONTEXT = ["Без телефона","С телефоном","Под сериал","Под YouTube","За чтением","В тишине","В спешке","Разговор за столом"];
+/* ============================================================ */
+/* ==================== СПРАВОЧНИКИ =========================== */
+/* ============================================================ */
 
-const TEXTURES = ["Мягкая","Хрустящая","Плотная","Нежная","Волокнистая","Кремовая","Жидкая","Сухая","Сочная","Липкая","Газированная"];
-const SMELLS = ["Яркий аромат","Слабый запах","Приятный","Нейтральный","Специи","Сладкий","Свежий","Жареный","Пряный","Отталкивающий"];
+const MEALS = ["Завтрак","Второй завтрак","Обед","Полдник","Ужин","Поздний ужин","Перекус","Ночной дожор"];
+
+const MEAL_TIMES = [
+  "Раннее утро (5-7)","Утро (7-9)","Позднее утро (9-11)","Полдень (11-13)",
+  "День (13-15)","После обеда (15-17)","Вечер (17-19)","Поздний вечер (19-21)",
+  "Ночь (21-24)","Глубокая ночь (0-5)"
+];
+
+const PORTIONS = ["Маленькая","Средняя","Большая","Огромная","Не поняла","Взяла добавку"];
+
+const DISHES = [
+  "Домашняя еда","Готовое / доставка","Кафе / ресторан","Фастфуд","Салат",
+  "Суп","Основное блюдо","Гарнир","Закуска","Десерт","Сладкое","Фрукты",
+  "Овощи","Каша","Яйца","Мясо","Рыба","Морепродукты","Молочное","Хлеб / выпечка",
+  "Напиток","Кофе / чай","Снек","Семечки / орехи","Мороженое","Шоколад"
+];
+
+const PLACES = [
+  // Дом
+  "🏠 Кухня","🛋 Гостиная","🛏 Спальня","🚿 Ванная","🧑‍💻 Рабочий стол дома","🌳 Балкон",
+  // Работа / учёба
+  "🏢 Рабочий стол","🍽 Офисная кухня","📚 Учебная аудитория","☕ Кофейня","🥗 Столовая",
+  // Вне дома
+  "🍴 Кафе","🍕 Ресторан","🍔 Фастфуд","🛒 Фудкорт","🎬 Кинотеатр",
+  "🚗 В машине","🚌 В транспорте","🚶 На ходу","🛣 В дороге",
+  // Социальные места
+  "🎉 В гостях","👨‍👩‍👧 У родителей","🏖 На природе","⛺ В поездке","🏨 В отеле",
+  // Странные / эмоциональные
+  "🛏 В постели ночью","🚪 Стоя у холодильника","🍳 Прямо со сковороды","🛒 В магазине","🅿 На парковке"
+];
+
+const WITH = [
+  // Одна
+  "🙋 Одна","🙋 Одна, но онлайн с кем-то","🐱 С питомцем",
+  // Близкие
+  "💑 С партнёром","👶 С ребёнком","👨‍👩‍👧 С детьми","👪 С семьёй","👵 С родителями","👴 С бабушкой/дедушкой","🤰 С родственниками",
+  // Друзья / социум
+  "👯 С подругой","👬 С другом","👥 С друзьями","🤝 С коллегами","🎓 С однокурсниками",
+  // Общество
+  "👥 В большой компании","🎉 На празднике","🍽 На дне рождения","💼 На бизнес-ланче",
+  // Фоном
+  "👀 Рядом кто-то есть, но я ем отдельно","🖥 С коллегами по зуму"
+];
+
+const CONTEXT = [
+  "📵 Без телефона","📱 С телефоном","📺 Под сериал","📹 Под YouTube","🎧 Под подкаст","📖 За чтением",
+  "🎵 Под музыку","🤔 В тишине","🏃 В спешке","💬 Разговор за столом","☎️ По телефону",
+  "💻 За работой","📝 За учёбой","🚶 На ходу","😴 Перед сном","🛁 После душа",
+  "😤 После ссоры","😢 После стресса","🎉 После праздника","😊 После хорошего дня",
+  "💪 После тренировки","🚬 С сигаретой","🍷 С алкоголем"
+];
+
+const TEXTURES = [
+  "Мягкая","Хрустящая","Плотная","Нежная","Волокнистая","Кремовая","Жидкая","Сухая",
+  "Сочная","Липкая","Газированная","Тающая","Упругая","Слоистая","Рыхлая","Зернистая"
+];
+const SMELLS = [
+  "Яркий аромат","Слабый запах","Приятный","Нейтральный","Специи","Сладкий","Свежий",
+  "Жареный","Пряный","Копчёный","Травяной","Цитрусовый","Молочный","Отталкивающий","Не чувствовала"
+];
 const TASTES = ["Сладкий","Солёный","Кислый","Горький","Умами","Пряный","Острый","Нейтральный","Насыщенный","Пустой"];
-const TEMPERATURES = ["Горячее","Тёплое","Комнатное","Прохладное","Холодное","Ледяное"];
-const SPEEDS = ["Очень медленно","Медленно","Средне","Быстро","Очень быстро","На ходу"];
-
-const EVENTS = [
-  "Стресс на работе","Конфликт","Скука","Усталость","Одиночество",
-  "Радость","Праздник","Встреча с близкими","Плохие новости","Хорошие новости",
-  "Критика","Похвала","Дедлайн","Ничего особенного"
+const EXTRA_TASTES = [
+  "Масляный","Кремовый","Сливочный","Жареный","Дымный","Копчёный","Мятный","Лимонный",
+  "Сырный","Томатный","Мясной","Рыбный","Ореховый","Медовый","Ванильный","Шоколадный"
 ];
-const ACTIONS = [
-  "Выпила воды","Подышала","Позвонила подруге","Пошла гулять","Приняла ванну",
-  "Полежала","Поплакала","Записала эмоции","Ничего — поела и всё"
+const TEMPERATURES = ["Обжигающее","Горячее","Тёплое","Комнатное","Прохладное","Холодное","Ледяное"];
+const SPEEDS = ["Очень медленно","Медленно","Средне","Быстро","Очень быстро","Заглатывая","На ходу"];
+const AFTER_FEELING = [
+  "Лёгкость","Сытость","Приятная тяжесть","Тяжесть","Раздутость","Тошнота",
+  "Удовольствие","Вина","Стыд","Безразличие","Хочется ещё","Хочется сладкого","Хочется спать"
 ];
 
+/* ============ СОБЫТИЯ (50+, по категориям) ============ */
+const EVENT_CATEGORIES = {
+  stress: { name:"Стресс / напряжение", color:"#d97b7b", events:[
+    "Стресс на работе","Дедлайн","Аврал","Много задач","Сложный разговор","Конфликт на работе",
+    "Увольнение","Проблемы в учёбе","Экзамен","Сессия","Неудача","Ошибка","Провал",
+    "Критика","Публичное выступление","Медицинский стресс","ДТП","Финансовые проблемы"
+  ]},
+  relations: { name:"Отношения / люди", color:"#d97ba8", events:[
+    "Ссора с партнёром","Ссора с родителями","Ссора с ребёнком","Ссора с подругой",
+    "Разрыв","Развод","Измена","Ревность","Обида","Игнор","Холодность близких",
+    "Плохие новости от близких","Болезнь близкого","Потеря близкого",
+    "Встреча с родными","Примирение","Признание в любви","Свидание"
+  ]},
+  emotion: { name:"Внутренние состояния", color:"#9b7bb8", events:[
+    "Одиночество","Тревога","Апатия","Усталость","Выгорание","Депрессивное состояние",
+    "ПМС","Плохой сон","Недосып","Болезнь","Головная боль","Плохое самочувствие",
+    "Скука","Пустота","Прокрастинация","Хандра"
+  ]},
+  joy: { name:"Радость / праздник", color:"#e8b84a", events:[
+    "День рождения","Годовщина","Праздник","Выходной","Отпуск","Поездка","Путешествие",
+    "Свадьба","Выпускной","Успех","Победа","Похвала","Подарок","Хорошие новости",
+    "Приятная встреча","Классное свидание","Повышение"
+  ]},
+  daily: { name:"Быт / рутина", color:"#8a7f6b", events:[
+    "Работа","Учёба","Домашние дела","Уборка","Готовка","Ожидание",
+    "Пробка","Транспорт","Поликлиника","Очереди","Магазин","Ремонт",
+    "Ничего особенного","Обычный день"
+  ]}
+};
+
+/* ============ ДЕЙСТВИЯ (60+, по категориям) ============ */
+const ACTION_CATEGORIES = {
+  body: { name:"Забота о теле", color:"#7fb069", actions:[
+    "Выпила воды","Подышала","Прогулялась","Сделала зарядку","Приняла ванну",
+    "Приняла душ","Полежала","Поспала","Растяжка","Медитация","Йога",
+    "Помассажировала себя","Умылась холодной водой","Вышла на воздух"
+  ]},
+  emotion: { name:"Эмоциональная разгрузка", color:"#d97ba8", actions:[
+    "Поплакала","Покричала","Побила подушку","Записала эмоции","Поговорила с собой",
+    "Мантра","Аффирмации","Простила себя","Пожалела себя","Обняла себя",
+    "Сказала себе доброе слово","Переключила внимание"
+  ]},
+  social: { name:"Связь с людьми", color:"#6b8bb8", actions:[
+    "Позвонила подруге","Позвонила маме","Написала в чат","Поговорила с партнёром",
+    "Обнялась с кем-то","Попросила поддержку","Пошутила с кем-то","Встретилась с близкими",
+    "Сходила в гости","Написала специалисту"
+  ]},
+  distract: { name:"Переключение / отвлечение", color:"#e8a54a", actions:[
+    "Посмотрела фильм","Послушала музыку","Почитала книгу","Полистала соцсети",
+    "Поиграла в игру","Посмотрела YouTube","Занялась хобби","Рисовала","Писала",
+    "Убралась","Переставила мебель","Погуляла","Поехала кататься"
+  ]},
+  eating: { name:"Питание / еда", color:"#c9b8a0", actions:[
+    "Поела осознанно","Поела медленно","Сделала паузу перед едой","Съела что-то другое",
+    "Заела эмоции","Ничего не делала с голодом","Отложила еду","Пропустила приём пищи"
+  ]},
+  mental: { name:"Осознанность / работа с собой", color:"#8ec9b8", actions:[
+    "Задала себе вопрос «Зачем?»","Проанализировала триггер","Записала в дневник",
+    "Понаблюдала за собой","Отметила паттерн","Прочитала статью о питании",
+    "Посмотрела лекцию","Поработала с психологом"
+  ]}
+};
+
+/* ============ ЭМОЦИИ (8 категорий, ~200) ============ */
 const EMOTION_CATEGORIES = {
   anger:   { name:"Гнев",   color:"#d97b7b", emotions:[
     "бешенство","ярость","ненависть","истерия","злость","раздражение",
     "презрение","негодование","обида","ревность","уязвлённость","досада",
-    "зависть","неприязнь","возмущение","отвращение"] },
+    "зависть","неприязнь","возмущение","отвращение",
+    "гнев","вспыльчивость","недовольство","раздосадованность","враждебность",
+    "бунт","упрямство","злопамятность","цинизм","сарказм",
+    "желчность","задиристость","неистовство","буря"
+  ] },
   fear:    { name:"Страх",  color:"#9b7bb8", emotions:[
     "ужас","отчаяние","испуг","оцепенение","подозрение","тревога",
     "ошарашенность","беспокойство","боязнь","унижение","замешательство",
     "растерянность","вина","стыд","сомнение","застенчивость","опасение",
-    "смущение","сломленность","надменность","ошеломлённость"] },
+    "смущение","сломленность","надменность","ошеломлённость",
+    "паника","фобия","паранойя","неуверенность","сомнение в себе",
+    "недоверие","настороженность","предчувствие","скованность",
+    "зажатость","уязвимость","беспомощность","беззащитность","смятение","шок"
+  ] },
   sadness: { name:"Грусть", color:"#6b8bb8", emotions:[
     "горечь","тоска","скорбь","лень","жалость","отрешённость",
     "беспомощность","душевная боль","безнадёжность","отчуждённость",
     "разочарование","потрясение","сожаление","скука","безысходность",
-    "печаль","загнанность"] },
+    "печаль","загнанность",
+    "грусть","уныние","подавленность","хмурость","меланхолия","ностальгия",
+    "обиженность","опустошённость","потерянность","бессилие","жалость к себе",
+    "разбитость","сломанность","упадок","отчаяние","потеря","одиночество",
+    "заброшенность","покинутость","непонятость"
+  ] },
   joy:     { name:"Радость",color:"#e8b84a", emotions:[
     "счастье","восторг","ликование","приподнятость","оживление",
     "умиротворение","увлечение","интерес","забота","ожидание",
     "возбуждение","предвкушение","надежда","любопытство",
-    "освобождение","принятие","нетерпение","вера","изумление"] },
+    "освобождение","принятие","нетерпение","вера","изумление",
+    "радость","веселье","задор","кураж","приподнятое настроение",
+    "эйфория","вдохновение","окрылённость","заводной настрой","азарт",
+    "праздник","удаль","молодость","игривость","озорство"
+  ] },
   love:    { name:"Любовь", color:"#d97ba8", emotions:[
     "нежность","теплота","сочувствие","блаженство","доверие",
     "безопасность","благодарность","спокойствие","симпатия",
     "идентичность","гордость","восхищение","уважение","самоценность",
     "влюблённость","любовь к себе","очарованность","смирение",
-    "искренность","дружелюбие","доброта","взаимовыручка"] }
+    "искренность","дружелюбие","доброта","взаимовыручка",
+    "привязанность","забота","опека","единение","близость","преданность",
+    "верность","понимание","поддержка","объятия","признательность",
+    "умиление","растроганность","обожание","страсть","притяжение","взаимность"
+  ] },
+  calm:    { name:"Спокойствие", color:"#8ec9b8", emotions:[
+    "спокойствие","умиротворение","расслабление","тишина","баланс",
+    "ясность","собранность","устойчивость","принятие себя","покой",
+    "тихая радость","уравновешенность","созерцание","медитация",
+    "уверенность","самообладание","терпение","сдержанность",
+    "стабильность","защищённость","надёжность","опора","почва под ногами",
+    "отдых","тихий вечер"
+  ] },
+  interest: { name:"Интерес", color:"#e8a54a", emotions:[
+    "интерес","любопытство","вовлечённость","увлечённость","заинтересованность",
+    "азарт","интрига","предвкушение","исследование","познание",
+    "удивление","изумление","восторг от нового","наблюдательность",
+    "внимательность","сосредоточенность","поток","погружение",
+    "творческий подъём","вдохновение","поиск","эксперимент"
+  ] },
+  pleasure: { name:"Удовольствие", color:"#d97bd9", emotions:[
+    "удовольствие","наслаждение","нега","блаженство","комфорт",
+    "уют","сладость","истома","томность","чувственность",
+    "телесное удовольствие","вкус","аромат",
+    "приятность","довольство","сытость","умиротворение от еды",
+    "ощущение праздника","роскошь","изобилие","щедрость"
+  ] }
 };
 
-/* ============ СОСТОЯНИЕ ============ */
+/* ============================================================ */
+/* ==================== СОСТОЯНИЕ ============================= */
+/* ============================================================ */
 const state = {
   date:"", time:"",
-  meal:null, place:null, with:null, context:null,
+  meal:null, mealTime:null, portion:null, dish:[],
+  place:null, with:null, context:null,
   food:"",
-  texture: [], smell: [], taste: [], temperature: [], speed: [],
+  texture: [], smell: [], taste: [], extraTaste: [], temperature: [], speed: [], afterFeeling: [],
   tasteStars: 0,
   hunger:null,
   before:5, after:5, h1:5, h3:5,
@@ -863,12 +1261,19 @@ const state = {
 };
 
 let selectedForExport = new Set();
+let pendingImportData = null;
 
-/* ============ ИНИЦИАЛИЗАЦИЯ ============ */
+/* ============================================================ */
+/* ==================== ИНИЦИАЛИЗАЦИЯ ========================= */
+/* ============================================================ */
 document.addEventListener('DOMContentLoaded', init);
 
 function init() {
   renderTagGroup("mealTags", MEALS, "meal");
+  renderTagGroup("mealTimeTags", MEAL_TIMES, "mealTime");
+  renderTagGroup("portionTags", PORTIONS, "portion");
+  renderTagGroup("dishTags", DISHES, "dish", null, true);
+
   renderTagGroup("placeTags", PLACES, "place");
   renderTagGroup("withTags", WITH, "with");
   renderTagGroup("contextTags", CONTEXT, "context");
@@ -876,13 +1281,15 @@ function init() {
   renderTagGroup("textureTags", TEXTURES, "texture", null, true);
   renderTagGroup("smellTags", SMELLS, "smell", null, true);
   renderTagGroup("tasteTags", TASTES, "taste", null, true);
+  renderTagGroup("extraTasteTags", EXTRA_TASTES, "extraTaste", null, true);
   renderTagGroup("temperatureTags", TEMPERATURES, "temperature", null, true);
   renderTagGroup("speedTags", SPEEDS, "speed", null, true);
-
-  renderTagGroup("eventTags", EVENTS, "events", null, true);
-  renderTagGroup("actionTags", ACTIONS, "actions", null, true);
+  renderTagGroup("afterFeelingTags", AFTER_FEELING, "afterFeeling", null, true);
 
   renderEmotionCategories();
+  renderEventCategories();
+  renderActionCategories();
+
   updateEmoCounter();
   updateSelectedSummary();
 
@@ -913,6 +1320,7 @@ function init() {
 
   loadDraft();
   updateStreak();
+  updateBackupStatus();
   render();
 }
 
@@ -1014,7 +1422,7 @@ function updateStars() {
 function renderTagGroup(containerId, items, key, onSelect, multi = false) {
   const el = document.getElementById(containerId);
   if (!el) return;
-  el.innerHTML = items.map(t => `<span class="tag" data-val="${t}">${t}</span>`).join('');
+  el.innerHTML = items.map(t => `<span class="tag" data-val="${escapeHtml(t)}">${escapeHtml(t)}</span>`).join('');
   el.querySelectorAll('.tag').forEach(tag => {
     tag.onclick = () => {
       const val = tag.dataset.val;
@@ -1023,6 +1431,7 @@ function renderTagGroup(containerId, items, key, onSelect, multi = false) {
         const idx = arr.indexOf(val);
         if (idx >= 0) { arr.splice(idx, 1); tag.classList.remove('selected'); }
         else { arr.push(val); tag.classList.add('selected'); }
+        updateSelectedSummary();
       } else {
         el.querySelectorAll('.tag').forEach(t => t.classList.remove('selected'));
         tag.classList.add('selected');
@@ -1034,6 +1443,18 @@ function renderTagGroup(containerId, items, key, onSelect, multi = false) {
   });
 }
 
+function expandTags(containerId, btn) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (el.classList.contains('collapsed')) {
+    el.classList.remove('collapsed');
+    btn.textContent = '▲ Свернуть';
+  } else {
+    el.classList.add('collapsed');
+    btn.textContent = '▼ Показать все';
+  }
+}
+
 /* ============ ЭМОЦИИ ============ */
 function renderEmotionCategories() {
   const c = document.getElementById('emotionCategories');
@@ -1043,6 +1464,7 @@ function renderEmotionCategories() {
       <div class="emotion-cat-head" onclick="toggleCategory('${key}')">
         <span class="cat-name">
           <span class="dot" style="background:${cat.color}"></span>${cat.name}
+          <span style="font-weight:400;color:var(--muted);font-size:11px">(${cat.emotions.length})</span>
         </span>
         <span>
           <span class="count" id="count-${key}"></span>
@@ -1051,8 +1473,8 @@ function renderEmotionCategories() {
       </div>
       <div class="emotion-tags-wrap">
         ${cat.emotions.map(e => `
-          <span class="emotion-tag" data-cat="${key}" data-emotion="${e}"
-                onclick="toggleEmotion('${key}','${e.replace(/'/g,"\\'")}',this)">${e}</span>
+          <span class="emotion-tag" data-cat="${key}" data-emotion="${escapeHtml(e)}"
+                onclick="toggleEmotion('${key}','${e.replace(/'/g,"\\'")}',this)">${escapeHtml(e)}</span>
         `).join('')}
       </div>
     </div>
@@ -1081,7 +1503,106 @@ function updateCategoryCounts() {
   const counts = {};
   state.emotions.forEach(e => counts[e.cat] = (counts[e.cat]||0)+1);
   Object.keys(EMOTION_CATEGORIES).forEach(k => {
-    document.getElementById('count-'+k).textContent = counts[k] || '';
+    const el = document.getElementById('count-'+k);
+    if (el) el.textContent = counts[k] || '';
+  });
+}
+
+/* ============ СОБЫТИЯ ============ */
+function renderEventCategories() {
+  const c = document.getElementById('eventCategories');
+  if (!c) return;
+  c.innerHTML = Object.entries(EVENT_CATEGORIES).map(([key, cat]) => `
+    <div class="emotion-category" data-cat-key="ev-${key}">
+      <div class="emotion-cat-head" onclick="toggleCategory('ev-${key}')">
+        <span class="cat-name">
+          <span class="dot" style="background:${cat.color}"></span>${cat.name}
+          <span style="font-weight:400;color:var(--muted);font-size:11px">(${cat.events.length})</span>
+        </span>
+        <span>
+          <span class="count" id="count-ev-${key}"></span>
+          <span class="arrow">▼</span>
+        </span>
+      </div>
+      <div class="emotion-tags-wrap">
+        ${cat.events.map(e => `
+          <span class="emotion-tag" data-cat="event" data-val="${escapeHtml(e)}"
+                onclick="toggleEvent('${e.replace(/'/g,"\\'")}',this)">${escapeHtml(e)}</span>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleEvent(name, el) {
+  const idx = state.events.indexOf(name);
+  if (idx >= 0) { state.events.splice(idx, 1); el.classList.remove('selected'); }
+  else { state.events.push(name); el.classList.add('selected'); }
+  updateSelectedSummary();
+  updateEventCounts();
+  saveDraft();
+}
+
+function updateEventCounts() {
+  const counts = {};
+  Object.keys(EVENT_CATEGORIES).forEach(k => counts[k] = 0);
+  state.events.forEach(name => {
+    for (const [k, cat] of Object.entries(EVENT_CATEGORIES)) {
+      if (cat.events.includes(name)) { counts[k]++; break; }
+    }
+  });
+  Object.keys(EVENT_CATEGORIES).forEach(k => {
+    const el = document.getElementById('count-ev-'+k);
+    if (el) el.textContent = counts[k] || '';
+  });
+}
+
+/* ============ ДЕЙСТВИЯ ============ */
+function renderActionCategories() {
+  const c = document.getElementById('actionCategories');
+  if (!c) return;
+  c.innerHTML = Object.entries(ACTION_CATEGORIES).map(([key, cat]) => `
+    <div class="emotion-category" data-cat-key="ac-${key}">
+      <div class="emotion-cat-head" onclick="toggleCategory('ac-${key}')">
+        <span class="cat-name">
+          <span class="dot" style="background:${cat.color}"></span>${cat.name}
+          <span style="font-weight:400;color:var(--muted);font-size:11px">(${cat.actions.length})</span>
+        </span>
+        <span>
+          <span class="count" id="count-ac-${key}"></span>
+          <span class="arrow">▼</span>
+        </span>
+      </div>
+      <div class="emotion-tags-wrap">
+        ${cat.actions.map(e => `
+          <span class="emotion-tag" data-cat="action" data-val="${escapeHtml(e)}"
+                onclick="toggleAction('${e.replace(/'/g,"\\'")}',this)">${escapeHtml(e)}</span>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleAction(name, el) {
+  const idx = state.actions.indexOf(name);
+  if (idx >= 0) { state.actions.splice(idx, 1); el.classList.remove('selected'); }
+  else { state.actions.push(name); el.classList.add('selected'); }
+  updateSelectedSummary();
+  updateActionCounts();
+  saveDraft();
+}
+
+function updateActionCounts() {
+  const counts = {};
+  Object.keys(ACTION_CATEGORIES).forEach(k => counts[k] = 0);
+  state.actions.forEach(name => {
+    for (const [k, cat] of Object.entries(ACTION_CATEGORIES)) {
+      if (cat.actions.includes(name)) { counts[k]++; break; }
+    }
+  });
+  Object.keys(ACTION_CATEGORIES).forEach(k => {
+    const el = document.getElementById('count-ac-'+k);
+    if (el) el.textContent = counts[k] || '';
   });
 }
 
@@ -1090,25 +1611,37 @@ function updateSelectedSummary() {
   const sum = document.getElementById('selectedSummary');
   const parts = [];
   state.emotions.forEach(e =>
-    parts.push(`<span class="chip" data-cat="${e.cat}">${e.name}</span>`));
+    parts.push(`<span class="chip" data-cat="${e.cat}">${escapeHtml(e.name)}</span>`));
   state.events.forEach(e =>
-    parts.push(`<span class="chip" data-cat="event">${e}</span>`));
+    parts.push(`<span class="chip" data-cat="event">${escapeHtml(e)}</span>`));
   state.actions.forEach(e =>
-    parts.push(`<span class="chip" data-cat="action">${e}</span>`));
+    parts.push(`<span class="chip" data-cat="action">${escapeHtml(e)}</span>`));
 
   sum.innerHTML = parts.length
     ? '<b style="color:var(--accent);margin-right:4px">Выбрано:</b> ' + parts.join('')
-    : '<span class="empty-hint">Эмоции пока не выбраны</span>';
+    : '<span class="empty-hint">Пока ничего не выбрано</span>';
 }
 
 /* ============ UI ============ */
 function switchTab(tab, btn) {
   document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  ['form','list','stats','cheat'].forEach(t => {
-    document.getElementById('tab-'+t).classList.toggle('hidden', t !== tab);
+  ['form','list','stats','backup','cheat'].forEach(t => {
+    const el = document.getElementById('tab-'+t);
+    if (el) el.classList.toggle('hidden', t !== tab);
   });
   if (tab === 'list') renderList();
+  if (tab === 'backup') updateBackupStatus();
+}
+
+function switchTabAndScroll(tabName) {
+  const tabs = document.querySelectorAll('.tabs button');
+  const map = { form:0, list:1, stats:2, backup:3, cheat:4 };
+  const idx = map[tabName];
+  if (idx !== undefined && tabs[idx]) {
+    switchTab(tabName, tabs[idx]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }
 
 function selectHunger(type, btn) {
@@ -1118,11 +1651,12 @@ function selectHunger(type, btn) {
   saveDraft();
 }
 
-function showToast(msg) {
+function showToast(msg, type = '') {
   const t = document.getElementById('toast');
   t.textContent = msg;
+  t.className = 'toast ' + type;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
+  setTimeout(() => t.classList.remove('show'), 2500);
 }
 
 /* ============ ХРАНИЛИЩЕ ============ */
@@ -1134,8 +1668,8 @@ function saveEntries(a) { localStorage.setItem('foodDiary', JSON.stringify(a)); 
 
 /* ============ СОХРАНЕНИЕ ============ */
 function saveEntry() {
-  if (!state.food.trim()) { showToast('Опишите хотя бы кратко, что съели 🙏'); return; }
-  if (!state.hunger) { showToast('Выберите тип голода'); return; }
+  if (!state.food.trim()) { showToast('Опишите хотя бы кратко, что съели 🙏', 'warn'); return; }
+  if (!state.hunger) { showToast('Выберите тип голода', 'warn'); return; }
 
   const dt = state.date && state.time ? new Date(state.date + 'T' + state.time) : new Date();
 
@@ -1143,6 +1677,9 @@ function saveEntry() {
     id: Date.now(),
     date: dt.toISOString(),
     meal: state.meal || "—",
+    mealTime: state.mealTime || "—",
+    portion: state.portion || "—",
+    dish: state.dish.slice(),
     place: state.place || "—",
     with: state.with || "—",
     context: state.context || "—",
@@ -1150,8 +1687,10 @@ function saveEntry() {
     texture: state.texture.slice(),
     smell: state.smell.slice(),
     taste: state.taste.slice(),
+    extraTaste: state.extraTaste.slice(),
     temperature: state.temperature.slice(),
     speed: state.speed.slice(),
+    afterFeeling: state.afterFeeling.slice(),
     tasteStars: state.tasteStars,
     hunger: state.hunger,
     before: state.before,
@@ -1179,9 +1718,10 @@ function saveEntry() {
 
 function resetForm() {
   Object.assign(state, {
-    meal:null, place:null, with:null, context:null,
+    meal:null, mealTime:null, portion:null, dish:[],
+    place:null, with:null, context:null,
     food:"",
-    texture: [], smell: [], taste: [], temperature: [], speed: [],
+    texture: [], smell: [], taste: [], extraTaste: [], temperature: [], speed: [], afterFeeling: [],
     tasteStars: 0,
     hunger:null,
     before:5, after:5, h1:5, h3:5,
@@ -1206,6 +1746,8 @@ function resetForm() {
   updateEmoCounter();
   updateSelectedSummary();
   updateCategoryCounts();
+  updateEventCounts();
+  updateActionCounts();
   setNow();
 }
 
@@ -1252,7 +1794,7 @@ function updateStreak() {
   else fire.textContent = '⚡🔥🔥🔥';
 }
 
-/* ============ ЗАПИСИ — вид как в Елене 4 ============ */
+/* ============ ЗАПИСИ ============ */
 function render() { renderList(); renderStats(); }
 
 function renderList() {
@@ -1271,7 +1813,11 @@ function renderList() {
     const d = new Date(e.date);
     const dateStr = d.toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}) + ', ' +
       d.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
-    const isEmo = e.hunger === 'emo';
+    const hungerType = e.hunger || 'phys';
+    const hungerIcons = {
+      phys: '🟢', emo: '🟠', soc: '🔵', sens: '🩷', habit: '🟣', bored: '🟡'
+    };
+    const icon = hungerIcons[hungerType] || '🟢';
     const beforeInfo = getScaleInfo(e.before);
     const afterInfo = getScaleInfo(e.after);
     const h1Info = getScaleInfo(e.h1);
@@ -1279,33 +1825,39 @@ function renderList() {
     const isSelected = selectedForExport.has(e.id);
 
     const chips = [
-      ...(e.emotions||[]).map(x => `<span class="chip" data-cat="${x.cat}">${x.name}</span>`),
-      ...(e.events||[]).map(x => `<span class="chip" data-cat="event">${x}</span>`),
-      ...(e.actions||[]).map(x => `<span class="chip" data-cat="action">${x}</span>`)
+      ...(e.emotions||[]).map(x => `<span class="chip" data-cat="${x.cat}">${escapeHtml(x.name)}</span>`),
+      ...(e.events||[]).map(x => `<span class="chip" data-cat="event">${escapeHtml(x)}</span>`),
+      ...(e.actions||[]).map(x => `<span class="chip" data-cat="action">${escapeHtml(x)}</span>`)
     ].join('');
 
     const foodTags = [
+      ...(e.dish||[]).map(x => `🍲 ${x}`),
       ...(e.texture||[]).map(x => `🧵 ${x}`),
       ...(e.smell||[]).map(x => `👃 ${x}`),
       ...(e.taste||[]).map(x => `👅 ${x}`),
+      ...(e.extraTaste||[]).map(x => `✨ ${x}`),
       ...(e.temperature||[]).map(x => `🌡️ ${x}`),
-      ...(e.speed||[]).map(x => `⏱️ ${x}`)
+      ...(e.speed||[]).map(x => `⏱️ ${x}`),
+      ...(e.afterFeeling||[]).map(x => `💭 ${x}`)
     ];
     const foodTagsHtml = foodTags.length
-      ? `<div class="entry-chips">${foodTags.map(t => `<span class="chip" style="background:#c9b8a0;color:#3a2f1f">${t}</span>`).join('')}</div>`
+      ? `<div class="entry-chips">${foodTags.map(t => `<span class="chip" data-cat="food">${escapeHtml(t)}</span>`).join('')}</div>`
       : '';
 
     const starsHtml = e.tasteStars > 0
       ? `<div class="entry-stars">${'<span class="star-on">★</span>'.repeat(e.tasteStars)}${'<span class="star-off">★</span>'.repeat(5-e.tasteStars)}</div>`
       : '';
 
+    const portionHtml = e.portion && e.portion !== '—' ? ` · 🍽️ ${escapeHtml(e.portion)}` : '';
+    const mealTimeHtml = e.mealTime && e.mealTime !== '—' ? ` · 🕐 ${escapeHtml(e.mealTime)}` : '';
+
     return `
-      <div class="entry ${isEmo ? 'emo' : ''} ${isSelected ? 'selected-for-export' : ''}" data-id="${e.id}">
+      <div class="entry ${hungerType} ${isSelected ? 'selected-for-export' : ''}" data-id="${e.id}">
         <input type="checkbox" class="entry-checkbox" ${isSelected ? 'checked' : ''}
                onchange="toggleSelect(${e.id}, this.checked, this)">
         <div class="entry-head">
           <div>
-            <h3>${isEmo?'🟠':'🟢'} ${escapeHtml(e.meal)} · ${escapeHtml(e.time || '')}</h3>
+            <h3>${icon} ${escapeHtml(e.meal)}${portionHtml}${mealTimeHtml}</h3>
             <div class="meta">${dateStr} · ${escapeHtml(e.place)} · ${escapeHtml(e.with)}</div>
           </div>
           <button class="btn-ghost" onclick="deleteEntry(${e.id})">✕</button>
@@ -1378,7 +1930,11 @@ function renderStats() {
   }
   const total = arr.length;
   const emo = arr.filter(e => e.hunger === 'emo').length;
-  const phys = total - emo;
+  const phys = arr.filter(e => e.hunger === 'phys').length;
+  const soc = arr.filter(e => e.hunger === 'soc').length;
+  const sens = arr.filter(e => e.hunger === 'sens').length;
+  const habit = arr.filter(e => e.hunger === 'habit').length;
+  const bored = arr.filter(e => e.hunger === 'bored').length;
   const over = arr.filter(e => e.overeat).length;
   const pct = Math.round(emo / total * 100);
 
@@ -1401,7 +1957,10 @@ function renderStats() {
     <div class="stat"><div class="num">${total}</div><div class="lbl">Всего записей</div></div>
     <div class="stat"><div class="num">${phys}</div><div class="lbl">🟢 Физиологический</div></div>
     <div class="stat"><div class="num emo">${emo}</div><div class="lbl">🟠 Эмоциональный</div></div>
-    <div class="stat"><div class="num emo">${pct}%</div><div class="lbl">Доля эмоц. голода</div></div>
+    <div class="stat"><div class="num" style="color:var(--soc)">${soc}</div><div class="lbl">🔵 Социальный</div></div>
+    <div class="stat"><div class="num" style="color:var(--sens)">${sens}</div><div class="lbl">🩷 Сенсорный</div></div>
+    <div class="stat"><div class="num" style="color:var(--habit)">${habit}</div><div class="lbl">🟣 По привычке</div></div>
+    <div class="stat"><div class="num" style="color:var(--bored)">${bored}</div><div class="lbl">🟡 От скуки</div></div>
     <div class="stat"><div class="num">${over}</div><div class="lbl">⚠️ Перееданий</div></div>
     <div class="stat"><div class="num fire">${calcStreak()}</div><div class="lbl">🔥 Дней подряд</div></div>
     <div class="stat"><div class="num star">${avgTaste}</div><div class="lbl">⭐ Средний вкус</div></div>
@@ -1456,7 +2015,218 @@ function findCat(name) {
   return null;
 }
 
-/* ============ ЭКСПОРТ: ОБЩЕЕ ============ */
+/* ============ БЭКАПЫ ============ */
+function updateBackupStatus() {
+  const lastBackup = localStorage.getItem('foodDiaryLastBackup');
+  const arr = getEntries();
+  const count = arr.length;
+
+  const statusBox = document.getElementById('backupStatus');
+  const titleEl = document.getElementById('backupStatusTitle');
+  const textEl = document.getElementById('backupStatusText');
+  const reminder = document.getElementById('backupReminder');
+  const reminderText = document.getElementById('backupReminderText');
+
+  if (!statusBox) return;
+
+  let history = [];
+  try { history = JSON.parse(localStorage.getItem('foodDiaryBackupHistory') || '[]'); }
+  catch { history = []; }
+  renderBackupHistory(history);
+
+  if (count === 0) {
+    statusBox.querySelector('.icon').textContent = '🌱';
+    titleEl.textContent = 'Пока нет записей';
+    textEl.textContent = 'Бэкап пока не нужен. Начните вести дневник.';
+    reminder.classList.remove('show');
+    return;
+  }
+
+  if (!lastBackup) {
+    statusBox.querySelector('.icon').textContent = '⚠️';
+    titleEl.textContent = 'Бэкап ещё не делался';
+    textEl.innerHTML = `<span class="dot-status bad"></span> ${count} записей пока не сохранены в файл`;
+    reminder.classList.add('show');
+    reminderText.textContent = `У вас ${count} записей, но бэкап ещё не делался.`;
+    return;
+  }
+
+  const last = new Date(lastBackup);
+  const now = new Date();
+  const days = Math.floor((now - last) / 86400000);
+  const dateStr = last.toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}) +
+    ', ' + last.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+
+  if (days < 7) {
+    statusBox.querySelector('.icon').textContent = '✅';
+    titleEl.textContent = 'Всё в порядке';
+    textEl.innerHTML = `<span class="dot-status ok"></span> Последний бэкап: ${dateStr} (${days} ${daysWord(days)})`;
+    reminder.classList.remove('show');
+  } else {
+    statusBox.querySelector('.icon').textContent = '⚠️';
+    titleEl.textContent = 'Пора сделать бэкап';
+    textEl.innerHTML = `<span class="dot-status warn"></span> Последний бэкап: ${dateStr} (${days} ${daysWord(days)})`;
+    reminder.classList.add('show');
+    reminderText.textContent = `Последний бэкап был ${days} ${daysWord(days)} назад. Сохраните записи!`;
+  }
+}
+
+function daysWord(n) {
+  const abs = Math.abs(n) % 100;
+  const last = abs % 10;
+  if (abs > 10 && abs < 20) return 'дней';
+  if (last === 1) return 'день';
+  if (last >= 2 && last <= 4) return 'дня';
+  return 'дней';
+}
+
+function renderBackupHistory(history) {
+  const list = document.getElementById('backupHistoryList');
+  if (!list) return;
+
+  if (!history.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0">История пуста — бэкапы ещё не делались</div>';
+    return;
+  }
+
+  list.innerHTML = history.slice(0, 10).map(h => {
+    const d = new Date(h.date);
+    const dateStr = d.toLocaleDateString('ru-RU', {day:'numeric', month:'short', year:'numeric'}) +
+      ', ' + d.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+    const icon = h.type === 'export' ? '📥' : '📤';
+    const label = h.type === 'export' ? 'Скачан бэкап' : 'Восстановлено';
+    return `
+      <div class="history-item">
+        <span class="hi-icon">${icon}</span>
+        <span class="hi-date">${label}</span>
+        <span class="hi-meta">${dateStr} · ${h.count} зап.</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function exportJSON() {
+  const arr = getEntries();
+
+  const backup = {
+    version: 9,
+    exportDate: new Date().toISOString(),
+    count: arr.length,
+    entries: arr
+  };
+
+  const json = JSON.stringify(backup, null, 2);
+  const date = new Date().toISOString().slice(0,10);
+  const filename = `Дневник_бэкап_${date}.json`;
+
+  const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+
+  const now = new Date().toISOString();
+  localStorage.setItem('foodDiaryLastBackup', now);
+
+  let history = [];
+  try { history = JSON.parse(localStorage.getItem('foodDiaryBackupHistory') || '[]'); }
+  catch { history = []; }
+  history.unshift({ date: now, type: 'export', count: arr.length });
+  history = history.slice(0, 20);
+  localStorage.setItem('foodDiaryBackupHistory', JSON.stringify(history));
+
+  showToast(`💾 Бэкап скачан (${arr.length} записей)`);
+  updateBackupStatus();
+}
+
+function triggerImport() {
+  document.getElementById('importFile').click();
+}
+
+function handleImportFile(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+
+      let entries;
+      if (Array.isArray(data)) entries = data;
+      else if (data && Array.isArray(data.entries)) entries = data.entries;
+      else throw new Error('Неверный формат файла');
+
+      if (!entries.length) {
+        showToast('Файл не содержит записей', 'warn');
+        return;
+      }
+
+      pendingImportData = entries;
+
+      document.getElementById('importOptions').classList.add('show');
+      document.getElementById('backupStatusTitle').textContent = `Найдено ${entries.length} записей`;
+      document.getElementById('backupStatusText').textContent = 'Выберите, как восстановить данные';
+    } catch (err) {
+      console.error(err);
+      showToast('Ошибка чтения файла: ' + err.message, 'err');
+    }
+  };
+  reader.readAsText(file);
+
+  event.target.value = '';
+}
+
+function applyImport(mode) {
+  if (!pendingImportData || !pendingImportData.length) return;
+
+  const existing = getEntries();
+  let result;
+
+  if (mode === 'replace') {
+    if (!confirm(`Удалить все ${existing.length} текущих записей и заменить на ${pendingImportData.length} из файла?`)) {
+      return;
+    }
+    result = pendingImportData.slice();
+  } else if (mode === 'merge') {
+    const existingIds = new Set(existing.map(e => e.id));
+    const toAdd = pendingImportData.filter(e => !existingIds.has(e.id));
+    result = existing.concat(toAdd);
+    result.sort((a,b) => new Date(b.date) - new Date(a.date));
+  } else {
+    cancelImport();
+    return;
+  }
+
+  saveEntries(result);
+
+  const now = new Date().toISOString();
+  let history = [];
+  try { history = JSON.parse(localStorage.getItem('foodDiaryBackupHistory') || '[]'); }
+  catch { history = []; }
+  history.unshift({ date: now, type: 'import', count: result.length });
+  history = history.slice(0, 20);
+  localStorage.setItem('foodDiaryBackupHistory', JSON.stringify(history));
+
+  cancelImport();
+  updateStreak();
+  render();
+  updateBackupStatus();
+
+  showToast(`✅ Восстановлено. Всего записей: ${result.length}`);
+}
+
+function cancelImport() {
+  pendingImportData = null;
+  document.getElementById('importOptions').classList.remove('show');
+  updateBackupStatus();
+}
+
+/* ============ ЭКСПОРТ PDF / TXT / MD ============ */
 function getSelectedEntries() {
   const arr = getEntries();
   if (!arr.length) return [];
@@ -1497,7 +2267,15 @@ function downloadFile(filename, content, mimeType) {
   setTimeout(() => URL.revokeObjectURL(url), 500);
 }
 
-/* ============ ЭКСПОРТ В TXT ============ */
+const HUNGER_LABELS = {
+  phys: '🟢 Физиологический',
+  emo: '🟠 Эмоциональный',
+  soc: '🔵 Социальный',
+  sens: '🩷 Сенсорный',
+  habit: '🟣 По привычке',
+  bored: '🟡 От скуки'
+};
+
 function exportTXT() {
   const entries = getSelectedEntries();
   if (!entries.length) return;
@@ -1514,12 +2292,12 @@ function exportTXT() {
   out += sep + '\n\n';
 
   entries.forEach((e, i) => {
-    const isEmo = e.hunger === 'emo';
-    const typeMark = isEmo ? '🟠 ЭМОЦИОНАЛЬНЫЙ' : '🟢 ФИЗИОЛОГИЧЕСКИЙ';
+    const typeMark = HUNGER_LABELS[e.hunger] || '—';
 
     out += `ЗАПИСЬ №${i + 1}\n`;
     out += thin + '\n';
-    out += `Тип приёма:  ${e.meal}\n`;
+    out += `Тип приёма:  ${e.meal}${e.mealTime && e.mealTime !== '—' ? ' (' + e.mealTime + ')' : ''}\n`;
+    out += `Порция:      ${e.portion || '—'}\n`;
     out += `Дата:        ${formatEntryDate(e.date)}\n`;
     out += `Тип голода:  ${typeMark}\n`;
     out += `Шкала:       ${e.before} → ${e.after} → ${e.h1} → ${e.h3} (до → после → +1ч → +3ч)\n`;
@@ -1528,26 +2306,23 @@ function exportTXT() {
     out += `Фон:         ${e.context}\n`;
     out += `\nЕда:\n  ${e.food}\n`;
 
+    if (e.dish && e.dish.length) out += `\nТип блюда:  ${e.dish.join(', ')}\n`;
     if (e.tasteStars > 0) out += `\nОценка вкуса: ${'★'.repeat(e.tasteStars)}${'☆'.repeat(5-e.tasteStars)} (${e.tasteStars}/5)\n`;
 
     const foodTags = [
       ...(e.texture||[]).map(x => `текстура: ${x}`),
       ...(e.smell||[]).map(x => `запах: ${x}`),
       ...(e.taste||[]).map(x => `вкус: ${x}`),
+      ...(e.extraTaste||[]).map(x => `оттенок: ${x}`),
       ...(e.temperature||[]).map(x => `темп: ${x}`),
-      ...(e.speed||[]).map(x => `скорость: ${x}`)
+      ...(e.speed||[]).map(x => `скорость: ${x}`),
+      ...(e.afterFeeling||[]).map(x => `после: ${x}`)
     ];
     if (foodTags.length) out += `\nОщущения:  ${foodTags.join(' · ')}\n`;
 
-    if (e.emotions && e.emotions.length) {
-      out += `\nЭмоции:\n  ` + e.emotions.map(x => x.name).join(', ') + '\n';
-    }
-    if (e.events && e.events.length) {
-      out += `\nСобытия:\n  ` + e.events.join(', ') + '\n';
-    }
-    if (e.actions && e.actions.length) {
-      out += `\nЧто сделала:\n  ` + e.actions.join(', ') + '\n';
-    }
+    if (e.emotions && e.emotions.length) out += `\nЭмоции:\n  ` + e.emotions.map(x => x.name).join(', ') + '\n';
+    if (e.events && e.events.length) out += `\nСобытия:\n  ` + e.events.join(', ') + '\n';
+    if (e.actions && e.actions.length) out += `\nЧто сделала:\n  ` + e.actions.join(', ') + '\n';
     if (e.overeat) out += `\n⚠️ ПЕРЕЕДАНИЕ\n`;
     if (e.comment) out += `\nКомментарий:\n  «${e.comment}»\n`;
     out += '\n' + thin + '\n\n';
@@ -1558,7 +2333,6 @@ function exportTXT() {
   showToast('📃 TXT скачан');
 }
 
-/* ============ ЭКСПОРТ В MARKDOWN ============ */
 function exportMD() {
   const entries = getSelectedEntries();
   if (!entries.length) return;
@@ -1573,14 +2347,15 @@ function exportMD() {
   md += `---\n\n`;
 
   entries.forEach((e, i) => {
-    const isEmo = e.hunger === 'emo';
-    const badge = isEmo ? '🟠 Эмоциональный' : '🟢 Физиологический';
+    const badge = HUNGER_LABELS[e.hunger] || '—';
 
     md += `## Запись №${i + 1} — ${e.meal}\n\n`;
     md += `**${badge}** · _${formatEntryDate(e.date)}_\n\n`;
 
     md += `| Параметр | Значение |\n`;
     md += `|---|---|\n`;
+    if (e.mealTime && e.mealTime !== '—') md += `| Время приёма | ${e.mealTime} |\n`;
+    if (e.portion && e.portion !== '—') md += `| Порция | ${e.portion} |\n`;
     md += `| Шкала (до → после → +1ч → +3ч) | **${e.before} → ${e.after} → ${e.h1} → ${e.h3}** |\n`;
     md += `| Где | ${e.place} |\n`;
     md += `| С кем | ${e.with} |\n`;
@@ -1588,35 +2363,28 @@ function exportMD() {
 
     md += `**Что съела:**\n\n> ${e.food}\n\n`;
 
-    if (e.tasteStars > 0) {
-      md += `**Оценка вкуса:** ${'★'.repeat(e.tasteStars)}${'☆'.repeat(5-e.tasteStars)} (${e.tasteStars}/5)\n\n`;
-    }
+    if (e.dish && e.dish.length) md += `**Тип блюда:** ${e.dish.map(x => `\`${x}\``).join(' ')}\n\n`;
+    if (e.tasteStars > 0) md += `**Оценка вкуса:** ${'★'.repeat(e.tasteStars)}${'☆'.repeat(5-e.tasteStars)} (${e.tasteStars}/5)\n\n`;
 
     const foodTags = [
       ...(e.texture||[]).map(x => `🧵 ${x}`),
       ...(e.smell||[]).map(x => `👃 ${x}`),
       ...(e.taste||[]).map(x => `👅 ${x}`),
+      ...(e.extraTaste||[]).map(x => `✨ ${x}`),
       ...(e.temperature||[]).map(x => `🌡️ ${x}`),
-      ...(e.speed||[]).map(x => `⏱️ ${x}`)
+      ...(e.speed||[]).map(x => `⏱️ ${x}`),
+      ...(e.afterFeeling||[]).map(x => `💭 ${x}`)
     ];
-    if (foodTags.length) {
-      md += `**Ощущения:** ` + foodTags.map(x => `\`${x}\``).join(' ') + `\n\n`;
-    }
+    if (foodTags.length) md += `**Ощущения:** ` + foodTags.map(x => `\`${x}\``).join(' ') + `\n\n`;
 
     if (e.emotions && e.emotions.length) {
-      md += `**Эмоции:** `;
-      md += e.emotions.map(x => `\`${x.name}\``).join(' ');
-      md += `\n\n`;
+      md += `**Эмоции:** ` + e.emotions.map(x => `\`${x.name}\``).join(' ') + `\n\n`;
     }
     if (e.events && e.events.length) {
-      md += `**События:** `;
-      md += e.events.map(x => `\`${x}\``).join(' ');
-      md += `\n\n`;
+      md += `**События:** ` + e.events.map(x => `\`${x}\``).join(' ') + `\n\n`;
     }
     if (e.actions && e.actions.length) {
-      md += `**Что сделала:** `;
-      md += e.actions.map(x => `\`${x}\``).join(' ');
-      md += `\n\n`;
+      md += `**Что сделала:** ` + e.actions.map(x => `\`${x}\``).join(' ') + `\n\n`;
     }
     if (e.overeat) md += `> ⚠️ **Переедание**\n\n`;
     if (e.comment) md += `**Комментарий:**\n\n> _«${e.comment}»_\n\n`;
@@ -1629,7 +2397,6 @@ function exportMD() {
   showToast('📝 Markdown скачан');
 }
 
-/* ============ ЭКСПОРТ В PDF ============ */
 function exportPDF() {
   const entries = getSelectedEntries();
   if (!entries.length) return;
@@ -1652,10 +2419,8 @@ function exportPDF() {
 }
 
 function renderPrintEntry(e) {
-  const isEmo = e.hunger === 'emo';
-  const badge = isEmo
-    ? '<span class="badge emo">🟠 Эмоциональный</span>'
-    : '<span class="badge phys">🟢 Физиологический</span>';
+  const hungerType = e.hunger || 'phys';
+  const badge = `<span class="badge ${hungerType}">${HUNGER_LABELS[hungerType] || ''}</span>`;
 
   const chips = [
     ...(e.emotions||[]).map(x => `<span class="print-chip ${x.cat}">${escapeHtml(x.name)}</span>`),
@@ -1664,11 +2429,14 @@ function renderPrintEntry(e) {
   ].join('');
 
   const foodChips = [
+    ...(e.dish||[]).map(x => `<span class="print-chip food">🍲 ${escapeHtml(x)}</span>`),
     ...(e.texture||[]).map(x => `<span class="print-chip food">🧵 ${escapeHtml(x)}</span>`),
     ...(e.smell||[]).map(x => `<span class="print-chip food">👃 ${escapeHtml(x)}</span>`),
     ...(e.taste||[]).map(x => `<span class="print-chip food">👅 ${escapeHtml(x)}</span>`),
+    ...(e.extraTaste||[]).map(x => `<span class="print-chip food">✨ ${escapeHtml(x)}</span>`),
     ...(e.temperature||[]).map(x => `<span class="print-chip food">🌡️ ${escapeHtml(x)}</span>`),
-    ...(e.speed||[]).map(x => `<span class="print-chip food">⏱️ ${escapeHtml(x)}</span>`)
+    ...(e.speed||[]).map(x => `<span class="print-chip food">⏱️ ${escapeHtml(x)}</span>`),
+    ...(e.afterFeeling||[]).map(x => `<span class="print-chip food">💭 ${escapeHtml(x)}</span>`)
   ].join('');
 
   const stars = e.tasteStars > 0
@@ -1679,7 +2447,7 @@ function renderPrintEntry(e) {
     <div class="print-entry">
       <div class="print-entry-head">
         <div class="print-entry-title">
-          ${escapeHtml(e.meal)} ${badge}
+          ${escapeHtml(e.meal)}${e.mealTime && e.mealTime !== '—' ? ' · ' + escapeHtml(e.mealTime) : ''} ${badge}
         </div>
         <div class="print-entry-date">${formatEntryDate(e.date)}</div>
       </div>
@@ -1698,6 +2466,15 @@ function renderPrintEntry(e) {
           <div class="print-field-value">${escapeHtml(e.context)}</div>
         </div>
       </div>
+
+      ${e.portion && e.portion !== '—' ? `
+        <div class="print-row" style="margin-top:2mm">
+          <div class="print-field">
+            <div class="print-field-label">Порция</div>
+            <div class="print-field-value">${escapeHtml(e.portion)}</div>
+          </div>
+        </div>
+      ` : ''}
 
       <div class="print-row" style="margin-top:3mm">
         <div class="print-field">
