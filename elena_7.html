@@ -1,0 +1,1744 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Дневник пищевого поведения</title>
+<style>
+  :root {
+    --bg: #f7f4ee;
+    --card: #ffffff;
+    --accent: #6b8e6b;
+    --accent-soft: #e8efe8;
+    --phys: #7fb069;
+    --emo: #e08e6d;
+    --text: #2c2c2c;
+    --muted: #8a8a8a;
+    --border: #e5e0d8;
+    --danger: #c76a6a;
+    --fire: #e8944a;
+    --anger: #d97b7b;
+    --fear: #9b7bb8;
+    --sadness: #6b8bb8;
+    --joy: #e8b84a;
+    --love: #d97ba8;
+    --star: #f0b429;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+    -webkit-tap-highlight-color: transparent;
+  }
+  header { text-align: center; padding: 16px 0 20px; }
+  header h1 { font-size: 22px; color: var(--accent); margin-bottom: 4px; }
+  header p { color: var(--muted); font-size: 13px; }
+
+  .streak {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, #ffe6c7, #ffd1a3);
+    color: #8a4a0f; padding: 8px 16px; border-radius: 30px;
+    font-weight: 700; font-size: 14px; margin-top: 12px;
+    box-shadow: 0 2px 8px rgba(232,148,74,0.25);
+    transition: all 0.3s;
+  }
+  .streak.big { font-size: 17px; padding: 12px 24px; }
+  .streak.big .fire { font-size: 22px; }
+  .streak .fire { font-size: 18px; }
+
+  .tabs {
+    display: flex; gap: 4px; background: var(--card);
+    border-radius: 12px; padding: 4px; margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .tabs button {
+    flex: 1; padding: 10px 4px; border: none; background: transparent;
+    border-radius: 9px; font-size: 13px; font-weight: 500;
+    color: var(--muted); cursor: pointer; transition: all 0.2s;
+  }
+  .tabs button.active { background: var(--accent); color: white; }
+
+  .card {
+    background: var(--card); border-radius: 16px; padding: 20px;
+    margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+  .card h2 {
+    font-size: 16px; margin-bottom: 14px; color: var(--accent);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+  }
+  .card h2 .badge {
+    font-size: 11px; background: var(--accent-soft); color: var(--accent);
+    padding: 2px 10px; border-radius: 20px; font-weight: 500;
+  }
+
+  .tag-group { margin-bottom: 4px; }
+  .tag-label {
+    font-size: 12px; color: var(--muted); margin: 14px 0 6px;
+    font-weight: 500; display: flex; align-items: center; justify-content: space-between;
+  }
+  .tag-label:first-child { margin-top: 0; }
+  .tag-label .hint { font-weight: 400; font-size: 11px; color: #b5b0a5; }
+  .tags { display: flex; flex-wrap: wrap; gap: 7px; }
+  .tag {
+    padding: 8px 14px; border-radius: 22px; font-size: 13px;
+    cursor: pointer; border: 1.5px solid var(--border); background: #fdfcfa;
+    color: var(--text); transition: all 0.15s; user-select: none;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .tag:hover { border-color: var(--accent); }
+  .tag.selected {
+    background: var(--accent); color: white;
+    border-color: var(--accent); font-weight: 600;
+  }
+  .tag.selected::before { content: "✓ "; }
+
+  .emotion-tag {
+    padding: 6px 12px; border-radius: 20px; font-size: 12px;
+    cursor: pointer; border: 1.5px solid var(--border); background: white;
+    color: var(--text); transition: all 0.15s; user-select: none;
+  }
+  .emotion-tag:hover { border-color: var(--accent); }
+  .emotion-tag.selected { color: white; font-weight: 600; border-color: transparent; }
+  .emotion-tag.selected[data-cat="anger"] { background: var(--anger); }
+  .emotion-tag.selected[data-cat="fear"] { background: var(--fear); }
+  .emotion-tag.selected[data-cat="sadness"] { background: var(--sadness); }
+  .emotion-tag.selected[data-cat="joy"] { background: var(--joy); color: #5a4000; }
+  .emotion-tag.selected[data-cat="love"] { background: var(--love); }
+
+  .emotion-category {
+    margin-bottom: 10px; border: 1.5px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+  }
+  .emotion-cat-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 14px; cursor: pointer; font-size: 13px; font-weight: 600;
+    background: #fdfcfa; user-select: none; transition: background 0.15s;
+  }
+  .emotion-cat-head:hover { background: #f4f0e8; }
+  .emotion-cat-head .cat-name { display: flex; align-items: center; gap: 8px; }
+  .emotion-cat-head .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .emotion-cat-head .count {
+    background: var(--accent); color: white; font-size: 11px;
+    padding: 1px 8px; border-radius: 20px; margin-right: 6px;
+  }
+  .emotion-cat-head .count:empty { display: none; }
+  .emotion-cat-head .arrow { color: var(--muted); font-size: 11px; transition: transform 0.2s; }
+  .emotion-category.open .arrow { transform: rotate(180deg); }
+  .emotion-tags-wrap {
+    display: none; flex-wrap: wrap; gap: 6px;
+    padding: 12px 14px; background: #fdfcfa;
+    border-top: 1.5px solid var(--border);
+  }
+  .emotion-category.open .emotion-tags-wrap { display: flex; }
+
+  .hunger-type { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 500px) { .hunger-type { grid-template-columns: 1fr; } }
+  .hunger-btn {
+    padding: 16px 14px; border: 2px solid var(--border); border-radius: 14px;
+    background: #fdfcfa; cursor: pointer; text-align: left;
+    transition: all 0.2s; position: relative;
+  }
+  .hunger-btn strong { display: flex; align-items: center; gap: 6px; font-size: 14px; margin-bottom: 5px; }
+  .hunger-btn span { color: var(--muted); font-size: 12px; line-height: 1.4; }
+  .hunger-btn.selected.phys { border-color: var(--phys); background: #eef6ea; }
+  .hunger-btn.selected.phys::after { content:"✓"; position: absolute; top: 10px; right: 14px; color: var(--phys); font-weight: 700; }
+  .hunger-btn.selected.emo { border-color: var(--emo); background: #fbeee8; }
+  .hunger-btn.selected.emo::after { content:"✓"; position: absolute; top: 10px; right: 14px; color: var(--emo); font-weight: 700; }
+
+  .slider-block { margin-bottom: 18px; }
+  .slider-block:last-child { margin-bottom: 0; }
+  .slider-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+  }
+  .slider-head .slider-title {
+    font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px;
+  }
+  .slider-head .slider-title .step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent-soft); color: var(--accent);
+    font-size: 12px; font-weight: 700;
+  }
+  .slider-head .value-badge {
+    font-weight: 700; font-size: 13px;
+    padding: 3px 12px; border-radius: 20px;
+    color: white; background: var(--accent);
+    transition: background 0.3s;
+  }
+
+  input[type="range"].hunger-slider {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 14px; border-radius: 10px;
+    outline: none; cursor: pointer;
+    background: linear-gradient(to right,
+      #c0392b 0%, #e67e22 20%, #f1c40f 35%,
+      #a8d08d 50%, #7fb069 65%, #f1c40f 80%,
+      #e67e22 90%, #c0392b 100%);
+  }
+  input[type="range"].hunger-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: white; border: 4px solid var(--accent);
+    cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: border-color 0.3s, transform 0.15s;
+  }
+  input[type="range"].hunger-slider::-webkit-slider-thumb:hover { transform: scale(1.1); }
+  input[type="range"].hunger-slider::-moz-range-thumb {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: white; border: 4px solid var(--accent);
+    cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .slider-labels {
+    display: flex; justify-content: space-between;
+    font-size: 10px; color: var(--muted); margin-top: 6px; padding: 0 4px;
+  }
+
+  input[type="range"].satiety-slider {
+    background: linear-gradient(to right,
+      #c0392b 0%, #e67e22 25%, #f1c40f 50%,
+      #a8d08d 75%, #7fb069 100%);
+  }
+
+  .stars {
+    display: flex; gap: 6px; font-size: 32px;
+    cursor: pointer; user-select: none;
+  }
+  .stars .star {
+    color: #e0dbd0; transition: all 0.15s;
+    line-height: 1;
+  }
+  .stars .star:hover { transform: scale(1.15); }
+  .stars .star.active { color: var(--star); text-shadow: 0 2px 6px rgba(240,180,41,0.4); }
+
+  .selected-summary {
+    margin-top: 14px; padding: 10px 14px;
+    background: var(--accent-soft); border-radius: 10px;
+    font-size: 13px; min-height: 40px; display: flex;
+    flex-wrap: wrap; gap: 4px; align-items: center;
+  }
+  .selected-summary .empty-hint { color: var(--muted); font-style: italic; font-size: 12px; }
+  .selected-summary .chip {
+    display: inline-block; padding: 2px 10px; border-radius: 20px;
+    font-size: 12px; color: white; background: var(--accent);
+    margin: 2px 2px 2px 0;
+  }
+  .selected-summary .chip[data-cat="anger"] { background: var(--anger); }
+  .selected-summary .chip[data-cat="fear"] { background: var(--fear); }
+  .selected-summary .chip[data-cat="sadness"] { background: var(--sadness); }
+  .selected-summary .chip[data-cat="joy"] { background: var(--joy); color: #5a4000; }
+  .selected-summary .chip[data-cat="love"] { background: var(--love); }
+  .selected-summary .chip[data-cat="event"] { background: #8a7f6b; }
+  .selected-summary .chip[data-cat="action"] { background: #6b8bb8; }
+
+  textarea, input[type="text"] {
+    width: 100%; padding: 10px 12px; border: 1.5px solid var(--border);
+    border-radius: 10px; font-size: 14px; font-family: inherit;
+    background: #fdfcfa; color: var(--text); transition: border-color 0.2s;
+  }
+  textarea:focus, input[type="text"]:focus { outline: none; border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 55px; }
+
+  .checkbox-line {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 14px; padding: 12px; background: #fdfcfa;
+    border: 1.5px solid var(--border); border-radius: 10px; cursor: pointer;
+  }
+  .checkbox-line input { width: 20px; height: 20px; accent-color: var(--danger); }
+
+  .btn {
+    display: inline-block; padding: 13px 22px; border: none;
+    border-radius: 10px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #5a7a5a; }
+  .btn-ghost {
+    background: transparent; color: var(--danger);
+    border: 1.5px solid var(--border); font-size: 12px; padding: 6px 12px;
+    border-radius: 10px; cursor: pointer;
+  }
+  .btn-ghost:hover { border-color: var(--danger); }
+  .actions { display: flex; gap: 12px; margin-top: 20px; }
+  .actions .btn-primary { flex: 1; }
+
+  /* ==== панель экспорта ==== */
+  .export-panel {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px; background: #fdfcfa;
+    border: 1.5px solid var(--border); border-radius: 12px;
+    margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .export-panel .count-selected {
+    font-size: 13px; color: var(--muted); flex: 1; min-width: 90px;
+  }
+  .export-panel .count-selected b { color: var(--accent); font-size: 15px; }
+  .export-panel .btn-soft {
+    background: var(--accent-soft); color: var(--accent);
+    border: none; font-size: 12px; padding: 8px 14px;
+    border-radius: 20px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .export-panel .btn-soft:hover { background: #d5e3d5; }
+  .export-panel .btn-export {
+    background: var(--accent); color: white; border: none;
+    font-size: 12px; font-weight: 600; padding: 8px 12px;
+    border-radius: 20px; cursor: pointer; transition: all 0.2s;
+  }
+  .export-panel .btn-export:hover { background: #5a7a5a; }
+  .export-panel .btn-export.txt { background: #8a7f6b; }
+  .export-panel .btn-export.txt:hover { background: #6f6553; }
+  .export-panel .btn-export.md { background: #6b8bb8; }
+  .export-panel .btn-export.md:hover { background: #4f6f9c; }
+
+  /* ==== ЗАПИСИ — вид как в Елене 4 ==== */
+  .entry {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 16px 16px 16px 48px;
+    margin-bottom: 10px;
+    border-left: 5px solid var(--phys);
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    position: relative;
+    transition: background 0.2s;
+  }
+  .entry.emo { border-left-color: var(--emo); }
+  .entry.selected-for-export {
+    background: #f4f9f4;
+    box-shadow: 0 0 0 2px var(--accent), 0 2px 8px rgba(107,142,107,0.15);
+  }
+  .entry-checkbox {
+    position: absolute; top: 18px; left: 14px;
+    width: 22px; height: 22px; accent-color: var(--accent);
+    cursor: pointer;
+  }
+  .entry-head {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; margin-bottom: 8px; gap: 8px;
+  }
+  .entry-head h3 { font-size: 14px; }
+  .entry-head .meta { font-size: 12px; color: var(--muted); }
+  .entry-body { font-size: 13px; line-height: 1.6; }
+  .entry-body b { color: var(--muted); font-weight: 500; }
+  .entry-chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0; }
+  .entry-chips .chip {
+    padding: 3px 10px; border-radius: 20px; font-size: 11px;
+    color: white; background: var(--accent);
+  }
+  .entry-chips .chip[data-cat="anger"] { background: var(--anger); }
+  .entry-chips .chip[data-cat="fear"] { background: var(--fear); }
+  .entry-chips .chip[data-cat="sadness"] { background: var(--sadness); }
+  .entry-chips .chip[data-cat="joy"] { background: var(--joy); color: #5a4000; }
+  .entry-chips .chip[data-cat="love"] { background: var(--love); }
+  .entry-chips .chip[data-cat="event"] { background: #8a7f6b; }
+  .entry-chips .chip[data-cat="action"] { background: #6b8bb8; }
+
+  .mini-scales {
+    display: flex; gap: 10px; margin: 8px 0;
+    padding: 10px; background: #fdfcfa;
+    border-radius: 10px; border: 1px dashed var(--border);
+  }
+  .mini-scale { flex: 1; text-align: center; }
+  .mini-scale .lbl { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+  .mini-scale .val {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 50%;
+    font-weight: 700; font-size: 14px; color: white;
+  }
+  .mini-scale .arrow { font-size: 16px; color: var(--muted); align-self: center; }
+
+  .entry-stars { font-size: 16px; letter-spacing: 2px; margin: 4px 0; }
+  .entry-stars .star-on { color: var(--star); }
+  .entry-stars .star-off { color: #ddd8cd; }
+
+  .empty { text-align: center; color: var(--muted); padding: 40px 20px; font-size: 14px; }
+
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .stat {
+    background: #fdfcfa; border-radius: 12px; padding: 16px;
+    text-align: center; border: 1.5px solid var(--border);
+  }
+  .stat .num { font-size: 26px; font-weight: 700; color: var(--accent); }
+  .stat .num.emo { color: var(--emo); }
+  .stat .num.fire { color: var(--fire); }
+  .stat .num.star { color: var(--star); }
+  .stat .lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .top-emotions { margin-top: 16px; }
+  .top-emotions h3 { font-size: 14px; color: var(--accent); margin-bottom: 10px; }
+  .top-emo-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 8px; font-size: 13px;
+  }
+  .top-emo-row .emo-name { min-width: 120px; font-weight: 500; }
+  .top-emo-row .bar {
+    flex: 1; height: 20px; background: #f0ece4;
+    border-radius: 10px; overflow: hidden;
+  }
+  .top-emo-row .bar-fill { height: 100%; border-radius: 10px; transition: width 0.4s; }
+  .top-emo-row .cnt { min-width: 30px; text-align: right; color: var(--muted); font-size: 12px; }
+
+  .hunger-dynamics {
+    margin-top: 16px; padding: 16px;
+    background: linear-gradient(135deg, #fdfcfa, #f4f0e8);
+    border-radius: 12px; border: 1.5px solid var(--border);
+  }
+  .hunger-dynamics h3 { font-size: 14px; color: var(--accent); margin-bottom: 12px; }
+  .dyn-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px; font-size: 13px;
+  }
+  .dyn-row .dyn-lbl { min-width: 90px; font-weight: 500; }
+  .dyn-row .dyn-bar {
+    flex: 1; height: 24px; background: #f0ece4;
+    border-radius: 12px; overflow: hidden; position: relative;
+  }
+  .dyn-row .dyn-fill {
+    height: 100%; border-radius: 12px;
+    transition: width 0.4s; display: flex; align-items: center;
+    padding-left: 10px; color: white; font-size: 12px; font-weight: 600;
+  }
+
+  .cheat h3 { font-size: 14px; color: var(--accent); margin: 18px 0 8px; }
+  .cheat ul { padding-left: 20px; font-size: 13px; }
+  .cheat li { margin-bottom: 4px; }
+
+  .hidden { display: none; }
+  .toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--accent); color: white; padding: 12px 24px;
+    border-radius: 30px; font-size: 14px; opacity: 0;
+    transition: all 0.3s; pointer-events: none; z-index: 100;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  .step-indicator { display: flex; gap: 4px; margin-bottom: 16px; }
+  .step-indicator .step-dot {
+    flex: 1; height: 4px; border-radius: 2px; background: var(--border);
+  }
+  .step-indicator .step-dot.done { background: var(--accent); }
+
+  /* ==== автосохранение ==== */
+  .autosave-hint {
+    font-size: 11px; color: var(--muted);
+    text-align: center; padding: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .autosave-hint .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #7fb069; animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* ==== дата/время ==== */
+  .datetime-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px;
+  }
+  @media (max-width: 500px) { .datetime-row { grid-template-columns: 1fr; } }
+  .datetime-field { display: flex; flex-direction: column; gap: 4px; }
+  .datetime-field label { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .datetime-field input {
+    padding: 10px 12px; border: 1.5px solid var(--border);
+    border-radius: 10px; font-size: 14px; font-family: inherit; background: #fdfcfa;
+  }
+  .datetime-field input:focus { outline: none; border-color: var(--accent); }
+
+  /* ==== печать ==== */
+  @media print {
+    body > *:not(#printArea) { display: none !important; }
+    #printArea { display: block !important; }
+    #printArea .print-page { padding: 15mm; }
+  }
+  #printArea { display: none; }
+  #printArea .print-page {
+    font-family: Georgia, "Times New Roman", serif;
+    color: #2c2c2c; font-size: 11pt; line-height: 1.5; background: white;
+  }
+  #printArea .print-header {
+    text-align: center; border-bottom: 2px solid #6b8e6b;
+    padding-bottom: 8mm; margin-bottom: 6mm;
+  }
+  #printArea .print-header h1 {
+    font-size: 20pt; color: #6b8e6b; margin-bottom: 3mm;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  #printArea .print-header .sub {
+    font-size: 10pt; color: #8a8a8a;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  #printArea .print-header .date-range {
+    margin-top: 3mm; font-size: 10pt; color: #555; font-style: italic;
+  }
+  #printArea .print-entry {
+    margin-bottom: 7mm; padding-bottom: 5mm;
+    border-bottom: 1px dashed #ccc; page-break-inside: avoid;
+  }
+  #printArea .print-entry:last-child { border-bottom: none; }
+  #printArea .print-entry-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 3mm; border-bottom: 1px solid #e5e0d8; padding-bottom: 2mm;
+  }
+  #printArea .print-entry-title {
+    font-size: 13pt; font-weight: bold; color: #4a5a4a;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  #printArea .print-entry-title .badge {
+    display: inline-block; font-size: 9pt; padding: 2px 8px;
+    border-radius: 20px; color: white; margin-left: 6px;
+    font-weight: 500; vertical-align: middle;
+  }
+  #printArea .print-entry-title .badge.phys { background: #7fb069; }
+  #printArea .print-entry-title .badge.emo { background: #e08e6d; }
+  #printArea .print-entry-date {
+    font-size: 10pt; color: #777;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  #printArea .print-row { display: flex; gap: 5mm; margin-bottom: 2mm; }
+  #printArea .print-row .print-field { flex: 1; }
+  #printArea .print-field-label {
+    font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.5px;
+    color: #999; margin-bottom: 1mm;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  #printArea .print-field-value { font-size: 11pt; color: #2c2c2c; }
+  #printArea .print-scales {
+    display: flex; gap: 4mm; margin: 3mm 0; padding: 3mm;
+    background: #f7f4ee; border-radius: 3mm;
+  }
+  #printArea .print-scale { flex: 1; text-align: center; }
+  #printArea .print-scale-label {
+    font-size: 8pt; color: #888;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  #printArea .print-scale-value {
+    font-size: 16pt; font-weight: bold; color: #6b8e6b;
+  }
+  #printArea .print-chips { display: flex; flex-wrap: wrap; gap: 1.5mm; margin: 2mm 0; }
+  #printArea .print-chip {
+    display: inline-block; padding: 1mm 3mm; border-radius: 20px;
+    font-size: 9pt; color: white;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  #printArea .print-chip.anger { background: #d97b7b; }
+  #printArea .print-chip.fear { background: #9b7bb8; }
+  #printArea .print-chip.sadness { background: #6b8bb8; }
+  #printArea .print-chip.joy { background: #e8b84a; color: #5a4000; }
+  #printArea .print-chip.love { background: #d97ba8; }
+  #printArea .print-chip.event { background: #8a7f6b; }
+  #printArea .print-chip.action { background: #6b8bb8; }
+  #printArea .print-chip.food { background: #c9b8a0; color: #3a2f1f; }
+  #printArea .print-comment {
+    font-style: italic; color: #555; padding: 2mm 3mm;
+    background: #f9f7f2; border-left: 3px solid #d9d4c8;
+    margin-top: 2mm; font-size: 10pt;
+  }
+  #printArea .print-overeat {
+    display: inline-block; padding: 1mm 3mm;
+    background: #fdeaea; color: #c76a6a; border-radius: 3mm;
+    font-size: 9pt; font-weight: bold; margin-top: 2mm;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌿 Дневник пищевого поведения</h1>
+  <p>Осознанное наблюдение за голодом, эмоциями и вкусом</p>
+  <div class="streak" id="streakBadge"><span class="fire">🔥</span> <span id="streakNum">0</span> дней подряд</div>
+</header>
+
+<div class="tabs">
+  <button class="active" onclick="switchTab('form', this)">✏️ Запись</button>
+  <button onclick="switchTab('list', this)">📖 Дневник</button>
+  <button onclick="switchTab('stats', this)">📊 Статистика</button>
+  <button onclick="switchTab('cheat', this)">💡 Шпаргалка</button>
+</div>
+
+<!-- ============ ФОРМА ============ -->
+<div id="tab-form">
+
+  <div class="card">
+    <h2>📅 Когда это было <span class="badge">авто</span></h2>
+    <div class="datetime-row">
+      <div class="datetime-field">
+        <label>Дата</label>
+        <input type="date" id="dateInput">
+      </div>
+      <div class="datetime-field">
+        <label>Время</label>
+        <input type="time" id="timeInput">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🍽️ Что за приём пищи</h2>
+    <div class="tag-label">Тип приёма</div>
+    <div class="tags" id="mealTags"></div>
+
+    <div class="tag-label">Где ела</div>
+    <div class="tags" id="placeTags"></div>
+
+    <div class="tag-label">С кем ела</div>
+    <div class="tags" id="withTags"></div>
+
+    <div class="tag-label">Что было на фоне</div>
+    <div class="tags" id="contextTags"></div>
+
+    <div class="tag-label">Что съела (кратко)</div>
+    <textarea id="food" placeholder="2 яйца, салат, тост с сыром, кофе..."></textarea>
+  </div>
+
+  <div class="card">
+    <h2>👅 Как ощущалась еда</h2>
+
+    <div class="tag-label">Текстура <span class="hint">можно несколько</span></div>
+    <div class="tags" id="textureTags"></div>
+
+    <div class="tag-label">Запах</div>
+    <div class="tags" id="smellTags"></div>
+
+    <div class="tag-label">Основной вкус</div>
+    <div class="tags" id="tasteTags"></div>
+
+    <div class="tag-label">Температура</div>
+    <div class="tags" id="temperatureTags"></div>
+
+    <div class="tag-label">Скорость еды</div>
+    <div class="tags" id="speedTags"></div>
+
+    <div class="tag-label" style="margin-top:18px">⭐ Оценка вкуса</div>
+    <div class="stars" id="tasteStars">
+      <span class="star" data-val="1">★</span>
+      <span class="star" data-val="2">★</span>
+      <span class="star" data-val="3">★</span>
+      <span class="star" data-val="4">★</span>
+      <span class="star" data-val="5">★</span>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:6px" id="tasteStarsText">Нажми на звёзды, чтобы оценить</div>
+  </div>
+
+  <div class="card">
+    <h2>🧭 Какой это был голод</h2>
+    <div class="hunger-type">
+      <button class="hunger-btn phys" data-type="phys" onclick="selectHunger('phys', this)">
+        <strong>🟢 Физиологический</strong>
+        <span>В животе, нарастает постепенно, через 3-4 часа после еды, утоляется любой едой</span>
+      </button>
+      <button class="hunger-btn emo" data-type="emo" onclick="selectHunger('emo', this)">
+        <strong>🟠 Эмоциональный</strong>
+        <span>В груди/горле, резко, тянет на конкретное, не проходит после еды</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Динамика голода</h2>
+    <div class="step-indicator">
+      <div class="step-dot" id="dot1"></div>
+      <div class="step-dot" id="dot2"></div>
+      <div class="step-dot" id="dot3"></div>
+      <div class="step-dot" id="dot4"></div>
+    </div>
+
+    <div class="slider-block">
+      <div class="slider-head">
+        <span class="slider-title"><span class="step-num">1</span> До еды</span>
+        <span class="value-badge" id="beforeBadge">5 · нейтрально</span>
+      </div>
+      <input type="range" min="1" max="10" value="5" step="1" class="hunger-slider" id="beforeSlider">
+      <div class="slider-labels"><span>1 сильнейший голод</span><span>5</span><span>10 переел</span></div>
+    </div>
+
+    <div class="slider-block">
+      <div class="slider-head">
+        <span class="slider-title"><span class="step-num">2</span> Сразу после еды</span>
+        <span class="value-badge" id="afterBadge">5 · нейтрально</span>
+      </div>
+      <input type="range" min="1" max="10" value="5" step="1" class="hunger-slider" id="afterSlider">
+      <div class="slider-labels"><span>1 всё ещё голодна</span><span>5</span><span>10 переела</span></div>
+    </div>
+
+    <div class="slider-block">
+      <div class="slider-head">
+        <span class="slider-title"><span class="step-num">3</span> Через 1 час</span>
+        <span class="value-badge" id="h1Badge">5 · нейтрально</span>
+      </div>
+      <input type="range" min="1" max="10" value="5" step="1" class="hunger-slider satiety-slider" id="h1Slider">
+      <div class="slider-labels"><span>1 снова голодна</span><span>5</span><span>10 тяжело</span></div>
+    </div>
+
+    <div class="slider-block">
+      <div class="slider-head">
+        <span class="slider-title"><span class="step-num">4</span> Через 3 часа</span>
+        <span class="value-badge" id="h3Badge">5 · нейтрально</span>
+      </div>
+      <input type="range" min="1" max="10" value="5" step="1" class="hunger-slider satiety-slider" id="h3Slider">
+      <div class="slider-labels"><span>1 голодна</span><span>5</span><span>10 тяжело</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>
+      <span>💭 Что чувствовала</span>
+      <span class="badge" id="emoCounter">0 выбрано</span>
+    </h2>
+
+    <div id="emotionCategories"></div>
+
+    <div class="selected-summary" id="selectedSummary">
+      <span class="empty-hint">Эмоции пока не выбраны</span>
+    </div>
+
+    <div class="tag-label" style="margin-top:14px">Что происходило (события)</div>
+    <div class="tags" id="eventTags"></div>
+
+    <div class="tag-label" style="margin-top:14px">Что сделала ещё</div>
+    <div class="tags" id="actionTags"></div>
+
+    <label class="checkbox-line" style="margin-top:16px">
+      <input type="checkbox" id="overeat">
+      <span>⚠️ Переела — не смогла остановиться, было тяжело</span>
+    </label>
+
+    <div class="tag-label" style="margin-top:14px">Комментарий для себя</div>
+    <textarea id="comment" placeholder="Например: я себя не ругаю, это был сложный день"></textarea>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" onclick="saveEntry()">💾 Сохранить запись</button>
+  </div>
+
+  <div class="autosave-hint">
+    <span class="dot"></span>
+    <span>Черновик автосохраняется</span>
+  </div>
+</div>
+
+<!-- ============ СПИСОК ============ -->
+<div id="tab-list" class="hidden">
+  <div class="card">
+    <h2>📖 Мои записи <span class="badge" id="totalCount">0 шт.</span></h2>
+
+    <div class="export-panel">
+      <span class="count-selected">Выбрано: <b id="selectedCount">0</b></span>
+      <button class="btn-soft" onclick="selectAll()">✅ Выбрать все</button>
+      <button class="btn-soft" onclick="deselectAll()">⬜ Снять все</button>
+      <button class="btn-export" onclick="exportPDF()">📄 PDF</button>
+      <button class="btn-export txt" onclick="exportTXT()">📃 TXT</button>
+      <button class="btn-export md" onclick="exportMD()">📝 Markdown</button>
+    </div>
+
+    <div id="entriesList"></div>
+  </div>
+</div>
+
+<!-- ============ СТАТИСТИКА ============ -->
+<div id="tab-stats" class="hidden">
+  <div class="card">
+    <h2>📊 Общая статистика</h2>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div id="hungerDynamics"></div>
+    <div class="top-emotions" id="topEmotions"></div>
+  </div>
+</div>
+
+<!-- ============ ШПАРГАЛКА ============ -->
+<div id="tab-cheat" class="hidden">
+  <div class="card cheat">
+    <h2>💡 Шпаргалка</h2>
+    <h3>🟢 Физиологический голод</h3>
+    <ul>
+      <li>В области живота, нарастает постепенно</li>
+      <li>Через 3-4 часа после еды</li>
+      <li>Утоляется любой едой</li>
+    </ul>
+    <h3>🟠 Эмоциональный голод</h3>
+    <ul>
+      <li>В груди и горле, возникает резко</li>
+      <li>Тянет на конкретную калорийную еду</li>
+      <li>Не проходит при физическом насыщении</li>
+    </ul>
+    <h3>🔍 Что делать при эмоциональном голоде</h3>
+    <ul>
+      <li>Спросить: где локализация? сколько прошло с еды?</li>
+      <li>Выпить стакан воды</li>
+      <li>Спросить: что я чувствую? какая потребность за эмоцией?</li>
+    </ul>
+    <h3>🍽️ Осознанное eating</h3>
+    <ul>
+      <li>Убрать телефон, сериал, книгу</li>
+      <li>Есть медленно, чувствовать текстуру, запах, вкус</li>
+      <li>Оценить — вкусно ли? хочется ли ещё?</li>
+      <li>Остановиться на «сыта», а не «переполнена»</li>
+    </ul>
+    <h3>🛡️ Работа с сопротивлением</h3>
+    <ul>
+      <li>Не бороться — сопротивление только усилится</li>
+      <li>Включить внутреннего наблюдателя</li>
+      <li>Задать вопрос «ЗАЧЕМ?»</li>
+      <li>Кризис — естественный этап, после него прорыв</li>
+    </ul>
+  </div>
+</div>
+
+<div class="toast" id="toast">Запись сохранена 🌿</div>
+
+<div id="printArea"></div>
+
+<script>
+/* ============ СПРАВОЧНИКИ ============ */
+const MEALS = ["Завтрак","Обед","Ужин","Перекус","Ночной дожор"];
+const PLACES = ["Кухня","Гостиная","Рабочий стол","Кафе","В гостях","В машине","На ходу","В постели"];
+const WITH = ["Одна","С семьёй","С партнёром","С детьми","С коллегами","С друзьями","С родителями"];
+const CONTEXT = ["Без телефона","С телефоном","Под сериал","Под YouTube","За чтением","В тишине","В спешке","Разговор за столом"];
+
+const TEXTURES = ["Мягкая","Хрустящая","Плотная","Нежная","Волокнистая","Кремовая","Жидкая","Сухая","Сочная","Липкая","Газированная"];
+const SMELLS = ["Яркий аромат","Слабый запах","Приятный","Нейтральный","Специи","Сладкий","Свежий","Жареный","Пряный","Отталкивающий"];
+const TASTES = ["Сладкий","Солёный","Кислый","Горький","Умами","Пряный","Острый","Нейтральный","Насыщенный","Пустой"];
+const TEMPERATURES = ["Горячее","Тёплое","Комнатное","Прохладное","Холодное","Ледяное"];
+const SPEEDS = ["Очень медленно","Медленно","Средне","Быстро","Очень быстро","На ходу"];
+
+const EVENTS = [
+  "Стресс на работе","Конфликт","Скука","Усталость","Одиночество",
+  "Радость","Праздник","Встреча с близкими","Плохие новости","Хорошие новости",
+  "Критика","Похвала","Дедлайн","Ничего особенного"
+];
+const ACTIONS = [
+  "Выпила воды","Подышала","Позвонила подруге","Пошла гулять","Приняла ванну",
+  "Полежала","Поплакала","Записала эмоции","Ничего — поела и всё"
+];
+
+const EMOTION_CATEGORIES = {
+  anger:   { name:"Гнев",   color:"#d97b7b", emotions:[
+    "бешенство","ярость","ненависть","истерия","злость","раздражение",
+    "презрение","негодование","обида","ревность","уязвлённость","досада",
+    "зависть","неприязнь","возмущение","отвращение"] },
+  fear:    { name:"Страх",  color:"#9b7bb8", emotions:[
+    "ужас","отчаяние","испуг","оцепенение","подозрение","тревога",
+    "ошарашенность","беспокойство","боязнь","унижение","замешательство",
+    "растерянность","вина","стыд","сомнение","застенчивость","опасение",
+    "смущение","сломленность","надменность","ошеломлённость"] },
+  sadness: { name:"Грусть", color:"#6b8bb8", emotions:[
+    "горечь","тоска","скорбь","лень","жалость","отрешённость",
+    "беспомощность","душевная боль","безнадёжность","отчуждённость",
+    "разочарование","потрясение","сожаление","скука","безысходность",
+    "печаль","загнанность"] },
+  joy:     { name:"Радость",color:"#e8b84a", emotions:[
+    "счастье","восторг","ликование","приподнятость","оживление",
+    "умиротворение","увлечение","интерес","забота","ожидание",
+    "возбуждение","предвкушение","надежда","любопытство",
+    "освобождение","принятие","нетерпение","вера","изумление"] },
+  love:    { name:"Любовь", color:"#d97ba8", emotions:[
+    "нежность","теплота","сочувствие","блаженство","доверие",
+    "безопасность","благодарность","спокойствие","симпатия",
+    "идентичность","гордость","восхищение","уважение","самоценность",
+    "влюблённость","любовь к себе","очарованность","смирение",
+    "искренность","дружелюбие","доброта","взаимовыручка"] }
+};
+
+/* ============ СОСТОЯНИЕ ============ */
+const state = {
+  date:"", time:"",
+  meal:null, place:null, with:null, context:null,
+  food:"",
+  texture: [], smell: [], taste: [], temperature: [], speed: [],
+  tasteStars: 0,
+  hunger:null,
+  before:5, after:5, h1:5, h3:5,
+  emotions: [], events: [], actions: [],
+  overeat: false, comment:""
+};
+
+let selectedForExport = new Set();
+
+/* ============ ИНИЦИАЛИЗАЦИЯ ============ */
+document.addEventListener('DOMContentLoaded', init);
+
+function init() {
+  renderTagGroup("mealTags", MEALS, "meal");
+  renderTagGroup("placeTags", PLACES, "place");
+  renderTagGroup("withTags", WITH, "with");
+  renderTagGroup("contextTags", CONTEXT, "context");
+
+  renderTagGroup("textureTags", TEXTURES, "texture", null, true);
+  renderTagGroup("smellTags", SMELLS, "smell", null, true);
+  renderTagGroup("tasteTags", TASTES, "taste", null, true);
+  renderTagGroup("temperatureTags", TEMPERATURES, "temperature", null, true);
+  renderTagGroup("speedTags", SPEEDS, "speed", null, true);
+
+  renderTagGroup("eventTags", EVENTS, "events", null, true);
+  renderTagGroup("actionTags", ACTIONS, "actions", null, true);
+
+  renderEmotionCategories();
+  updateEmoCounter();
+  updateSelectedSummary();
+
+  document.querySelectorAll('#tasteStars .star').forEach(s => {
+    s.onclick = () => {
+      state.tasteStars = +s.dataset.val;
+      updateStars();
+      saveDraft();
+    };
+  });
+
+  bindSlider('beforeSlider', 'beforeBadge', 'before', 'dot1');
+  bindSlider('afterSlider', 'afterBadge', 'after', 'dot2');
+  bindSlider('h1Slider', 'h1Badge', 'h1', 'dot3');
+  bindSlider('h3Slider', 'h3Badge', 'h3', 'dot4');
+
+  setNow();
+  document.getElementById('dateInput').addEventListener('change', e => {
+    state.date = e.target.value; saveDraft();
+  });
+  document.getElementById('timeInput').addEventListener('change', e => {
+    state.time = e.target.value; saveDraft();
+  });
+
+  document.getElementById('comment').addEventListener('input', e => { state.comment = e.target.value; saveDraft(); });
+  document.getElementById('food').addEventListener('input', e => { state.food = e.target.value; saveDraft(); });
+  document.getElementById('overeat').addEventListener('change', e => { state.overeat = e.target.checked; saveDraft(); });
+
+  loadDraft();
+  updateStreak();
+  render();
+}
+
+/* ============ ДАТА/ВРЕМЯ ============ */
+function setNow() {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth()+1).padStart(2,'0');
+  const dd = String(now.getDate()).padStart(2,'0');
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mi = String(now.getMinutes()).padStart(2,'0');
+  state.date = `${yyyy}-${mm}-${dd}`;
+  state.time = `${hh}:${mi}`;
+  document.getElementById('dateInput').value = state.date;
+  document.getElementById('timeInput').value = state.time;
+  saveDraft();
+}
+
+/* ============ АВТОСОХРАНЕНИЕ ЧЕРНОВИКА ============ */
+let draftTimeout;
+function saveDraft() {
+  clearTimeout(draftTimeout);
+  draftTimeout = setTimeout(() => {
+    try { localStorage.setItem('foodDiaryDraft', JSON.stringify(state)); } catch {}
+  }, 300);
+}
+function loadDraft() {
+  try {
+    const d = JSON.parse(localStorage.getItem('foodDiaryDraft') || 'null');
+    if (!d) return;
+    if (d.food) { state.food = d.food; document.getElementById('food').value = d.food; }
+    if (d.comment) { state.comment = d.comment; document.getElementById('comment').value = d.comment; }
+    if (d.tasteStars) { state.tasteStars = d.tasteStars; updateStars(); }
+  } catch {}
+}
+
+/* ============ СЛАЙДЕРЫ ============ */
+function bindSlider(sliderId, badgeId, key, dotId) {
+  const slider = document.getElementById(sliderId);
+  const badge = document.getElementById(badgeId);
+  const dot = document.getElementById(dotId);
+
+  const update = () => {
+    const v = +slider.value;
+    state[key] = v;
+    const info = getScaleInfo(v);
+    badge.textContent = v + ' · ' + info.short;
+    badge.style.background = info.color;
+    const thumbStyle = document.createElement('style');
+    thumbStyle.id = 'thumb-style-' + sliderId;
+    const old = document.getElementById(thumbStyle.id);
+    if (old) old.remove();
+    thumbStyle.textContent = `
+      #${sliderId}::-webkit-slider-thumb { border-color: ${info.color} !important; }
+      #${sliderId}::-moz-range-thumb { border-color: ${info.color} !important; }
+    `;
+    document.head.appendChild(thumbStyle);
+    if (dot) dot.classList.add('done');
+    saveDraft();
+  };
+
+  slider.addEventListener('input', update);
+  update();
+}
+
+function getScaleInfo(v) {
+  const map = {
+    1: {short:"сильнейший голод", color:"#c0392b"},
+    2: {short:"сильный голод",   color:"#d35400"},
+    3: {short:"голод",           color:"#e67e22"},
+    4: {short:"слабый голод",    color:"#f1c40f"},
+    5: {short:"нейтрально",      color:"#a8d08d"},
+    6: {short:"сытость",         color:"#7fb069"},
+    7: {short:"полная сытость",  color:"#6b8e6b"},
+    8: {short:"переполнен",      color:"#e67e22"},
+    9: {short:"сильно переполнен", color:"#d35400"},
+    10:{short:"«новый год»",     color:"#c0392b"}
+  };
+  return map[v] || map[5];
+}
+
+/* ============ ЗВЁЗДЫ ============ */
+function updateStars() {
+  document.querySelectorAll('#tasteStars .star').forEach(s => {
+    s.classList.toggle('active', +s.dataset.val <= state.tasteStars);
+  });
+  const texts = {
+    0: "Нажми на звёзды, чтобы оценить",
+    1: "1 ★ — совсем не вкусно",
+    2: "2 ★ — так себе",
+    3: "3 ★ — нормально",
+    4: "4 ★ — вкусно!",
+    5: "5 ★ — очень вкусно!"
+  };
+  document.getElementById('tasteStarsText').textContent = texts[state.tasteStars];
+}
+
+/* ============ ТЕГИ ============ */
+function renderTagGroup(containerId, items, key, onSelect, multi = false) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = items.map(t => `<span class="tag" data-val="${t}">${t}</span>`).join('');
+  el.querySelectorAll('.tag').forEach(tag => {
+    tag.onclick = () => {
+      const val = tag.dataset.val;
+      if (multi) {
+        const arr = state[key];
+        const idx = arr.indexOf(val);
+        if (idx >= 0) { arr.splice(idx, 1); tag.classList.remove('selected'); }
+        else { arr.push(val); tag.classList.add('selected'); }
+      } else {
+        el.querySelectorAll('.tag').forEach(t => t.classList.remove('selected'));
+        tag.classList.add('selected');
+        state[key] = val;
+        if (onSelect) onSelect(val);
+      }
+      saveDraft();
+    };
+  });
+}
+
+/* ============ ЭМОЦИИ ============ */
+function renderEmotionCategories() {
+  const c = document.getElementById('emotionCategories');
+  if (!c) return;
+  c.innerHTML = Object.entries(EMOTION_CATEGORIES).map(([key, cat]) => `
+    <div class="emotion-category" data-cat-key="${key}">
+      <div class="emotion-cat-head" onclick="toggleCategory('${key}')">
+        <span class="cat-name">
+          <span class="dot" style="background:${cat.color}"></span>${cat.name}
+        </span>
+        <span>
+          <span class="count" id="count-${key}"></span>
+          <span class="arrow">▼</span>
+        </span>
+      </div>
+      <div class="emotion-tags-wrap">
+        ${cat.emotions.map(e => `
+          <span class="emotion-tag" data-cat="${key}" data-emotion="${e}"
+                onclick="toggleEmotion('${key}','${e.replace(/'/g,"\\'")}',this)">${e}</span>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleCategory(key) {
+  document.querySelector(`.emotion-category[data-cat-key="${key}"]`).classList.toggle('open');
+}
+
+function toggleEmotion(catKey, name, el) {
+  const idx = state.emotions.findIndex(e => e.name === name);
+  if (idx >= 0) { state.emotions.splice(idx, 1); el.classList.remove('selected'); }
+  else { state.emotions.push({ name, cat: catKey }); el.classList.add('selected'); }
+  updateEmoCounter();
+  updateSelectedSummary();
+  updateCategoryCounts();
+  saveDraft();
+}
+
+function updateEmoCounter() {
+  document.getElementById('emoCounter').textContent = state.emotions.length + ' выбрано';
+}
+
+function updateCategoryCounts() {
+  const counts = {};
+  state.emotions.forEach(e => counts[e.cat] = (counts[e.cat]||0)+1);
+  Object.keys(EMOTION_CATEGORIES).forEach(k => {
+    document.getElementById('count-'+k).textContent = counts[k] || '';
+  });
+}
+
+/* ============ СВОДКА ============ */
+function updateSelectedSummary() {
+  const sum = document.getElementById('selectedSummary');
+  const parts = [];
+  state.emotions.forEach(e =>
+    parts.push(`<span class="chip" data-cat="${e.cat}">${e.name}</span>`));
+  state.events.forEach(e =>
+    parts.push(`<span class="chip" data-cat="event">${e}</span>`));
+  state.actions.forEach(e =>
+    parts.push(`<span class="chip" data-cat="action">${e}</span>`));
+
+  sum.innerHTML = parts.length
+    ? '<b style="color:var(--accent);margin-right:4px">Выбрано:</b> ' + parts.join('')
+    : '<span class="empty-hint">Эмоции пока не выбраны</span>';
+}
+
+/* ============ UI ============ */
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['form','list','stats','cheat'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('hidden', t !== tab);
+  });
+  if (tab === 'list') renderList();
+}
+
+function selectHunger(type, btn) {
+  state.hunger = type;
+  document.querySelectorAll('.hunger-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  saveDraft();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+/* ============ ХРАНИЛИЩЕ ============ */
+function getEntries() {
+  try { return JSON.parse(localStorage.getItem('foodDiary') || '[]'); }
+  catch { return []; }
+}
+function saveEntries(a) { localStorage.setItem('foodDiary', JSON.stringify(a)); }
+
+/* ============ СОХРАНЕНИЕ ============ */
+function saveEntry() {
+  if (!state.food.trim()) { showToast('Опишите хотя бы кратко, что съели 🙏'); return; }
+  if (!state.hunger) { showToast('Выберите тип голода'); return; }
+
+  const dt = state.date && state.time ? new Date(state.date + 'T' + state.time) : new Date();
+
+  const entry = {
+    id: Date.now(),
+    date: dt.toISOString(),
+    meal: state.meal || "—",
+    place: state.place || "—",
+    with: state.with || "—",
+    context: state.context || "—",
+    food: state.food.trim(),
+    texture: state.texture.slice(),
+    smell: state.smell.slice(),
+    taste: state.taste.slice(),
+    temperature: state.temperature.slice(),
+    speed: state.speed.slice(),
+    tasteStars: state.tasteStars,
+    hunger: state.hunger,
+    before: state.before,
+    after: state.after,
+    h1: state.h1,
+    h3: state.h3,
+    emotions: state.emotions.slice(),
+    events: state.events.slice(),
+    actions: state.actions.slice(),
+    overeat: state.overeat,
+    comment: state.comment.trim()
+  };
+
+  const arr = getEntries();
+  arr.unshift(entry);
+  arr.sort((a,b) => new Date(b.date) - new Date(a.date));
+  saveEntries(arr);
+
+  resetForm();
+  localStorage.removeItem('foodDiaryDraft');
+  showToast('Запись сохранена 🌿');
+  updateStreak();
+  render();
+}
+
+function resetForm() {
+  Object.assign(state, {
+    meal:null, place:null, with:null, context:null,
+    food:"",
+    texture: [], smell: [], taste: [], temperature: [], speed: [],
+    tasteStars: 0,
+    hunger:null,
+    before:5, after:5, h1:5, h3:5,
+    emotions: [], events: [], actions: [],
+    overeat: false, comment:""
+  });
+
+  document.querySelectorAll('.tag.selected').forEach(t => t.classList.remove('selected'));
+  document.querySelectorAll('.emotion-tag.selected').forEach(t => t.classList.remove('selected'));
+  document.querySelectorAll('.hunger-btn.selected').forEach(t => t.classList.remove('selected'));
+  document.getElementById('food').value = "";
+  document.getElementById('comment').value = "";
+  document.getElementById('overeat').checked = false;
+
+  ['beforeSlider','afterSlider','h1Slider','h3Slider'].forEach(id => {
+    const s = document.getElementById(id);
+    s.value = 5;
+    s.dispatchEvent(new Event('input'));
+  });
+
+  updateStars();
+  updateEmoCounter();
+  updateSelectedSummary();
+  updateCategoryCounts();
+  setNow();
+}
+
+function deleteEntry(id) {
+  if (!confirm('Удалить запись?')) return;
+  saveEntries(getEntries().filter(e => e.id !== id));
+  selectedForExport.delete(id);
+  updateStreak();
+  render();
+}
+
+/* ============ STREAK ============ */
+function calcStreak() {
+  const arr = getEntries();
+  if (!arr.length) return 0;
+  const days = [...new Set(arr.map(e => {
+    const d = new Date(e.date);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  }))].sort((a,b) => b-a);
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayTs = today.getTime();
+  const DAY = 86400000;
+  if (days[0] !== todayTs && days[0] !== todayTs - DAY) return 0;
+
+  let s = 1;
+  for (let i = 1; i < days.length; i++) {
+    if (days[i-1] - days[i] === DAY) s++;
+    else break;
+  }
+  return s;
+}
+
+function updateStreak() {
+  const s = calcStreak();
+  document.getElementById('streakNum').textContent = s;
+  const badge = document.getElementById('streakBadge');
+  badge.classList.toggle('big', s >= 7);
+  const fire = badge.querySelector('.fire');
+  if (s === 0) fire.textContent = '💤';
+  else if (s < 3) fire.textContent = '🔥';
+  else if (s < 7) fire.textContent = '🔥🔥';
+  else if (s < 14) fire.textContent = '🔥🔥🔥';
+  else fire.textContent = '⚡🔥🔥🔥';
+}
+
+/* ============ ЗАПИСИ — вид как в Елене 4 ============ */
+function render() { renderList(); renderStats(); }
+
+function renderList() {
+  const list = document.getElementById('entriesList');
+  const arr = getEntries();
+  const totalEl = document.getElementById('totalCount');
+  if (totalEl) totalEl.textContent = arr.length + ' шт.';
+  const selEl = document.getElementById('selectedCount');
+  if (selEl) selEl.textContent = selectedForExport.size;
+
+  if (!arr.length) {
+    list.innerHTML = '<div class="empty">Пока нет записей.<br>Начните с первой 🌱</div>';
+    return;
+  }
+  list.innerHTML = arr.map(e => {
+    const d = new Date(e.date);
+    const dateStr = d.toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}) + ', ' +
+      d.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+    const isEmo = e.hunger === 'emo';
+    const beforeInfo = getScaleInfo(e.before);
+    const afterInfo = getScaleInfo(e.after);
+    const h1Info = getScaleInfo(e.h1);
+    const h3Info = getScaleInfo(e.h3);
+    const isSelected = selectedForExport.has(e.id);
+
+    const chips = [
+      ...(e.emotions||[]).map(x => `<span class="chip" data-cat="${x.cat}">${x.name}</span>`),
+      ...(e.events||[]).map(x => `<span class="chip" data-cat="event">${x}</span>`),
+      ...(e.actions||[]).map(x => `<span class="chip" data-cat="action">${x}</span>`)
+    ].join('');
+
+    const foodTags = [
+      ...(e.texture||[]).map(x => `🧵 ${x}`),
+      ...(e.smell||[]).map(x => `👃 ${x}`),
+      ...(e.taste||[]).map(x => `👅 ${x}`),
+      ...(e.temperature||[]).map(x => `🌡️ ${x}`),
+      ...(e.speed||[]).map(x => `⏱️ ${x}`)
+    ];
+    const foodTagsHtml = foodTags.length
+      ? `<div class="entry-chips">${foodTags.map(t => `<span class="chip" style="background:#c9b8a0;color:#3a2f1f">${t}</span>`).join('')}</div>`
+      : '';
+
+    const starsHtml = e.tasteStars > 0
+      ? `<div class="entry-stars">${'<span class="star-on">★</span>'.repeat(e.tasteStars)}${'<span class="star-off">★</span>'.repeat(5-e.tasteStars)}</div>`
+      : '';
+
+    return `
+      <div class="entry ${isEmo ? 'emo' : ''} ${isSelected ? 'selected-for-export' : ''}" data-id="${e.id}">
+        <input type="checkbox" class="entry-checkbox" ${isSelected ? 'checked' : ''}
+               onchange="toggleSelect(${e.id}, this.checked, this)">
+        <div class="entry-head">
+          <div>
+            <h3>${isEmo?'🟠':'🟢'} ${escapeHtml(e.meal)} · ${escapeHtml(e.time || '')}</h3>
+            <div class="meta">${dateStr} · ${escapeHtml(e.place)} · ${escapeHtml(e.with)}</div>
+          </div>
+          <button class="btn-ghost" onclick="deleteEntry(${e.id})">✕</button>
+        </div>
+        <div class="entry-body">
+          <div><b>Еда:</b> ${escapeHtml(e.food)}</div>
+          ${e.context !== '—' ? `<div><b>Фон:</b> ${escapeHtml(e.context)}</div>` : ''}
+
+          ${starsHtml}
+          ${foodTagsHtml}
+
+          <div class="mini-scales">
+            <div class="mini-scale"><div class="lbl">До еды</div><div class="val" style="background:${beforeInfo.color}">${e.before}</div></div>
+            <div class="mini-scale arrow">→</div>
+            <div class="mini-scale"><div class="lbl">После</div><div class="val" style="background:${afterInfo.color}">${e.after}</div></div>
+            <div class="mini-scale arrow">→</div>
+            <div class="mini-scale"><div class="lbl">+1ч</div><div class="val" style="background:${h1Info.color}">${e.h1}</div></div>
+            <div class="mini-scale arrow">→</div>
+            <div class="mini-scale"><div class="lbl">+3ч</div><div class="val" style="background:${h3Info.color}">${e.h3}</div></div>
+          </div>
+
+          ${chips ? `<div class="entry-chips">${chips}</div>` : ''}
+          ${e.comment ? `<div style="margin-top:6px;font-style:italic;color:#666">«${escapeHtml(e.comment)}»</div>` : ''}
+          ${e.overeat ? '<div style="color:#c76a6a;margin-top:6px">⚠️ Переедание</div>' : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleSelect(id, checked, checkboxEl) {
+  if (checked) selectedForExport.add(id);
+  else selectedForExport.delete(id);
+
+  const selEl = document.getElementById('selectedCount');
+  if (selEl) selEl.textContent = selectedForExport.size;
+
+  if (checkboxEl) {
+    const card = checkboxEl.closest('.entry');
+    if (card) card.classList.toggle('selected-for-export', checked);
+  }
+}
+
+function selectAll() {
+  getEntries().forEach(e => selectedForExport.add(e.id));
+  renderList();
+}
+function deselectAll() {
+  selectedForExport.clear();
+  renderList();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+/* ============ СТАТИСТИКА ============ */
+function renderStats() {
+  const arr = getEntries();
+  const grid = document.getElementById('statsGrid');
+  const dynBox = document.getElementById('hungerDynamics');
+  const topBox = document.getElementById('topEmotions');
+
+  if (!arr.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Статистика появится после первой записи</div>';
+    dynBox.innerHTML = '';
+    topBox.innerHTML = '';
+    return;
+  }
+  const total = arr.length;
+  const emo = arr.filter(e => e.hunger === 'emo').length;
+  const phys = total - emo;
+  const over = arr.filter(e => e.overeat).length;
+  const pct = Math.round(emo / total * 100);
+
+  const avg = key => (arr.reduce((s, e) => s + (e[key] || 0), 0) / total).toFixed(1);
+  const avgBefore = avg('before');
+  const avgAfter = avg('after');
+  const avgH1 = avg('h1');
+  const avgH3 = avg('h3');
+
+  const rated = arr.filter(e => e.tasteStars > 0);
+  const avgTaste = rated.length
+    ? (rated.reduce((s, e) => s + e.tasteStars, 0) / rated.length).toFixed(1)
+    : '—';
+
+  const counter = {};
+  arr.forEach(e => (e.emotions||[]).forEach(x => counter[x.name] = (counter[x.name]||0)+1));
+  const top = Object.entries(counter).sort((a,b)=>b[1]-a[1]).slice(0, 8);
+
+  grid.innerHTML = `
+    <div class="stat"><div class="num">${total}</div><div class="lbl">Всего записей</div></div>
+    <div class="stat"><div class="num">${phys}</div><div class="lbl">🟢 Физиологический</div></div>
+    <div class="stat"><div class="num emo">${emo}</div><div class="lbl">🟠 Эмоциональный</div></div>
+    <div class="stat"><div class="num emo">${pct}%</div><div class="lbl">Доля эмоц. голода</div></div>
+    <div class="stat"><div class="num">${over}</div><div class="lbl">⚠️ Перееданий</div></div>
+    <div class="stat"><div class="num fire">${calcStreak()}</div><div class="lbl">🔥 Дней подряд</div></div>
+    <div class="stat"><div class="num star">${avgTaste}</div><div class="lbl">⭐ Средний вкус</div></div>
+  `;
+
+  dynBox.innerHTML = `
+    <div class="hunger-dynamics">
+      <h3>📈 Средняя динамика голода</h3>
+      <div class="dyn-row">
+        <span class="dyn-lbl">До еды</span>
+        <div class="dyn-bar"><div class="dyn-fill" style="width:${avgBefore*10}%;background:${getScaleInfo(Math.round(avgBefore)).color}">${avgBefore}</div></div>
+      </div>
+      <div class="dyn-row">
+        <span class="dyn-lbl">После</span>
+        <div class="dyn-bar"><div class="dyn-fill" style="width:${avgAfter*10}%;background:${getScaleInfo(Math.round(avgAfter)).color}">${avgAfter}</div></div>
+      </div>
+      <div class="dyn-row">
+        <span class="dyn-lbl">Через 1 час</span>
+        <div class="dyn-bar"><div class="dyn-fill" style="width:${avgH1*10}%;background:${getScaleInfo(Math.round(avgH1)).color}">${avgH1}</div></div>
+      </div>
+      <div class="dyn-row">
+        <span class="dyn-lbl">Через 3 часа</span>
+        <div class="dyn-bar"><div class="dyn-fill" style="width:${avgH3*10}%;background:${getScaleInfo(Math.round(avgH3)).color}">${avgH3}</div></div>
+      </div>
+    </div>
+  `;
+
+  if (top.length) {
+    const max = top[0][1];
+    topBox.innerHTML = `<h3>Топ эмоций за всё время</h3>` + top.map(([name, cnt]) => {
+      const w = Math.round(cnt / max * 100);
+      let color = '#8a7f6b';
+      const cat = findCat(name);
+      if (cat && EMOTION_CATEGORIES[cat]) color = EMOTION_CATEGORIES[cat].color;
+      return `
+        <div class="top-emo-row">
+          <span class="emo-name">${escapeHtml(name)}</span>
+          <span class="bar"><span class="bar-fill" style="width:${w}%;background:${color}"></span></span>
+          <span class="cnt">${cnt}</span>
+        </div>
+      `;
+    }).join('');
+  } else {
+    topBox.innerHTML = '';
+  }
+}
+
+function findCat(name) {
+  for (const [key, cat] of Object.entries(EMOTION_CATEGORIES)) {
+    if (cat.emotions.includes(name)) return key;
+  }
+  return null;
+}
+
+/* ============ ЭКСПОРТ: ОБЩЕЕ ============ */
+function getSelectedEntries() {
+  const arr = getEntries();
+  if (!arr.length) return [];
+  if (!selectedForExport.size) {
+    if (!confirm('Ничего не выбрано. Экспортировать ВСЕ записи?')) return [];
+    arr.forEach(e => selectedForExport.add(e.id));
+  }
+  return arr
+    .filter(e => selectedForExport.has(e.id))
+    .sort((a,b) => new Date(a.date) - new Date(b.date));
+}
+
+function formatDateRange(entries) {
+  if (!entries.length) return '';
+  const fmt = d => d.toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'});
+  const first = new Date(entries[0].date);
+  const last = new Date(entries[entries.length-1].date);
+  return first.toDateString() === last.toDateString()
+    ? fmt(first)
+    : `с ${fmt(first)} по ${fmt(last)}`;
+}
+
+function formatEntryDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}) +
+    ', ' + d.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+}
+
+function downloadFile(filename, content, mimeType) {
+  const blob = new Blob(['\uFEFF' + content], { type: mimeType + ';charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+}
+
+/* ============ ЭКСПОРТ В TXT ============ */
+function exportTXT() {
+  const entries = getSelectedEntries();
+  if (!entries.length) return;
+
+  const range = formatDateRange(entries);
+  const sep = '═'.repeat(60);
+  const thin = '─'.repeat(60);
+
+  let out = '';
+  out += sep + '\n';
+  out += '  ДНЕВНИК ПИЩЕВОГО ПОВЕДЕНИЯ\n';
+  out += '  Для консультации со специалистом\n';
+  out += '  ' + range + '  |  всего записей: ' + entries.length + '\n';
+  out += sep + '\n\n';
+
+  entries.forEach((e, i) => {
+    const isEmo = e.hunger === 'emo';
+    const typeMark = isEmo ? '🟠 ЭМОЦИОНАЛЬНЫЙ' : '🟢 ФИЗИОЛОГИЧЕСКИЙ';
+
+    out += `ЗАПИСЬ №${i + 1}\n`;
+    out += thin + '\n';
+    out += `Тип приёма:  ${e.meal}\n`;
+    out += `Дата:        ${formatEntryDate(e.date)}\n`;
+    out += `Тип голода:  ${typeMark}\n`;
+    out += `Шкала:       ${e.before} → ${e.after} → ${e.h1} → ${e.h3} (до → после → +1ч → +3ч)\n`;
+    out += `Где:         ${e.place}\n`;
+    out += `С кем:       ${e.with}\n`;
+    out += `Фон:         ${e.context}\n`;
+    out += `\nЕда:\n  ${e.food}\n`;
+
+    if (e.tasteStars > 0) out += `\nОценка вкуса: ${'★'.repeat(e.tasteStars)}${'☆'.repeat(5-e.tasteStars)} (${e.tasteStars}/5)\n`;
+
+    const foodTags = [
+      ...(e.texture||[]).map(x => `текстура: ${x}`),
+      ...(e.smell||[]).map(x => `запах: ${x}`),
+      ...(e.taste||[]).map(x => `вкус: ${x}`),
+      ...(e.temperature||[]).map(x => `темп: ${x}`),
+      ...(e.speed||[]).map(x => `скорость: ${x}`)
+    ];
+    if (foodTags.length) out += `\nОщущения:  ${foodTags.join(' · ')}\n`;
+
+    if (e.emotions && e.emotions.length) {
+      out += `\nЭмоции:\n  ` + e.emotions.map(x => x.name).join(', ') + '\n';
+    }
+    if (e.events && e.events.length) {
+      out += `\nСобытия:\n  ` + e.events.join(', ') + '\n';
+    }
+    if (e.actions && e.actions.length) {
+      out += `\nЧто сделала:\n  ` + e.actions.join(', ') + '\n';
+    }
+    if (e.overeat) out += `\n⚠️ ПЕРЕЕДАНИЕ\n`;
+    if (e.comment) out += `\nКомментарий:\n  «${e.comment}»\n`;
+    out += '\n' + thin + '\n\n';
+  });
+
+  const filename = 'Дневник_питания_' + new Date().toISOString().slice(0,10) + '.txt';
+  downloadFile(filename, out, 'text/plain');
+  showToast('📃 TXT скачан');
+}
+
+/* ============ ЭКСПОРТ В MARKDOWN ============ */
+function exportMD() {
+  const entries = getSelectedEntries();
+  if (!entries.length) return;
+
+  const range = formatDateRange(entries);
+
+  let md = '';
+  md += `# 🌿 Дневник пищевого поведения\n\n`;
+  md += `> _Для консультации со специалистом_\n\n`;
+  md += `**Период:** ${range}  \n`;
+  md += `**Всего записей:** ${entries.length}\n\n`;
+  md += `---\n\n`;
+
+  entries.forEach((e, i) => {
+    const isEmo = e.hunger === 'emo';
+    const badge = isEmo ? '🟠 Эмоциональный' : '🟢 Физиологический';
+
+    md += `## Запись №${i + 1} — ${e.meal}\n\n`;
+    md += `**${badge}** · _${formatEntryDate(e.date)}_\n\n`;
+
+    md += `| Параметр | Значение |\n`;
+    md += `|---|---|\n`;
+    md += `| Шкала (до → после → +1ч → +3ч) | **${e.before} → ${e.after} → ${e.h1} → ${e.h3}** |\n`;
+    md += `| Где | ${e.place} |\n`;
+    md += `| С кем | ${e.with} |\n`;
+    md += `| Фон | ${e.context} |\n\n`;
+
+    md += `**Что съела:**\n\n> ${e.food}\n\n`;
+
+    if (e.tasteStars > 0) {
+      md += `**Оценка вкуса:** ${'★'.repeat(e.tasteStars)}${'☆'.repeat(5-e.tasteStars)} (${e.tasteStars}/5)\n\n`;
+    }
+
+    const foodTags = [
+      ...(e.texture||[]).map(x => `🧵 ${x}`),
+      ...(e.smell||[]).map(x => `👃 ${x}`),
+      ...(e.taste||[]).map(x => `👅 ${x}`),
+      ...(e.temperature||[]).map(x => `🌡️ ${x}`),
+      ...(e.speed||[]).map(x => `⏱️ ${x}`)
+    ];
+    if (foodTags.length) {
+      md += `**Ощущения:** ` + foodTags.map(x => `\`${x}\``).join(' ') + `\n\n`;
+    }
+
+    if (e.emotions && e.emotions.length) {
+      md += `**Эмоции:** `;
+      md += e.emotions.map(x => `\`${x.name}\``).join(' ');
+      md += `\n\n`;
+    }
+    if (e.events && e.events.length) {
+      md += `**События:** `;
+      md += e.events.map(x => `\`${x}\``).join(' ');
+      md += `\n\n`;
+    }
+    if (e.actions && e.actions.length) {
+      md += `**Что сделала:** `;
+      md += e.actions.map(x => `\`${x}\``).join(' ');
+      md += `\n\n`;
+    }
+    if (e.overeat) md += `> ⚠️ **Переедание**\n\n`;
+    if (e.comment) md += `**Комментарий:**\n\n> _«${e.comment}»_\n\n`;
+
+    md += `---\n\n`;
+  });
+
+  const filename = 'Дневник_питания_' + new Date().toISOString().slice(0,10) + '.md';
+  downloadFile(filename, md, 'text/markdown');
+  showToast('📝 Markdown скачан');
+}
+
+/* ============ ЭКСПОРТ В PDF ============ */
+function exportPDF() {
+  const entries = getSelectedEntries();
+  if (!entries.length) return;
+
+  const range = formatDateRange(entries);
+
+  const printArea = document.getElementById('printArea');
+  printArea.innerHTML = `
+    <div class="print-page">
+      <div class="print-header">
+        <h1>🌿 Дневник пищевого поведения</h1>
+        <div class="sub">Для консультации со специалистом</div>
+        <div class="date-range">${range} · всего записей: ${entries.length}</div>
+      </div>
+      ${entries.map(e => renderPrintEntry(e)).join('')}
+    </div>
+  `;
+
+  setTimeout(() => window.print(), 200);
+}
+
+function renderPrintEntry(e) {
+  const isEmo = e.hunger === 'emo';
+  const badge = isEmo
+    ? '<span class="badge emo">🟠 Эмоциональный</span>'
+    : '<span class="badge phys">🟢 Физиологический</span>';
+
+  const chips = [
+    ...(e.emotions||[]).map(x => `<span class="print-chip ${x.cat}">${escapeHtml(x.name)}</span>`),
+    ...(e.events||[]).map(x => `<span class="print-chip event">${escapeHtml(x)}</span>`),
+    ...(e.actions||[]).map(x => `<span class="print-chip action">${escapeHtml(x)}</span>`)
+  ].join('');
+
+  const foodChips = [
+    ...(e.texture||[]).map(x => `<span class="print-chip food">🧵 ${escapeHtml(x)}</span>`),
+    ...(e.smell||[]).map(x => `<span class="print-chip food">👃 ${escapeHtml(x)}</span>`),
+    ...(e.taste||[]).map(x => `<span class="print-chip food">👅 ${escapeHtml(x)}</span>`),
+    ...(e.temperature||[]).map(x => `<span class="print-chip food">🌡️ ${escapeHtml(x)}</span>`),
+    ...(e.speed||[]).map(x => `<span class="print-chip food">⏱️ ${escapeHtml(x)}</span>`)
+  ].join('');
+
+  const stars = e.tasteStars > 0
+    ? `<div style="font-size:14pt;color:#f0b429;letter-spacing:2px">${'★'.repeat(e.tasteStars)}${'☆'.repeat(5-e.tasteStars)} <span style="font-size:9pt;color:#888">(${e.tasteStars}/5)</span></div>`
+    : '';
+
+  return `
+    <div class="print-entry">
+      <div class="print-entry-head">
+        <div class="print-entry-title">
+          ${escapeHtml(e.meal)} ${badge}
+        </div>
+        <div class="print-entry-date">${formatEntryDate(e.date)}</div>
+      </div>
+
+      <div class="print-row">
+        <div class="print-field">
+          <div class="print-field-label">Где</div>
+          <div class="print-field-value">${escapeHtml(e.place)}</div>
+        </div>
+        <div class="print-field">
+          <div class="print-field-label">С кем</div>
+          <div class="print-field-value">${escapeHtml(e.with)}</div>
+        </div>
+        <div class="print-field">
+          <div class="print-field-label">Фон</div>
+          <div class="print-field-value">${escapeHtml(e.context)}</div>
+        </div>
+      </div>
+
+      <div class="print-row" style="margin-top:3mm">
+        <div class="print-field">
+          <div class="print-field-label">Что съела</div>
+          <div class="print-field-value">${escapeHtml(e.food)}</div>
+        </div>
+      </div>
+
+      ${stars || foodChips ? `
+        <div style="margin-top:2mm">
+          ${stars}
+          ${foodChips ? `<div class="print-chips">${foodChips}</div>` : ''}
+        </div>
+      ` : ''}
+
+      <div class="print-scales">
+        <div class="print-scale">
+          <div class="print-scale-label">До еды</div>
+          <div class="print-scale-value">${e.before}</div>
+        </div>
+        <div class="print-scale">
+          <div class="print-scale-label">После еды</div>
+          <div class="print-scale-value">${e.after}</div>
+        </div>
+        <div class="print-scale">
+          <div class="print-scale-label">Через 1 час</div>
+          <div class="print-scale-value">${e.h1}</div>
+        </div>
+        <div class="print-scale">
+          <div class="print-scale-label">Через 3 часа</div>
+          <div class="print-scale-value">${e.h3}</div>
+        </div>
+      </div>
+
+      ${chips ? `<div class="print-chips">${chips}</div>` : ''}
+
+      ${e.comment ? `<div class="print-comment">«${escapeHtml(e.comment)}»</div>` : ''}
+      ${e.overeat ? `<div class="print-overeat">⚠️ Переедание</div>` : ''}
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
