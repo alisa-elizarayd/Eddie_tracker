@@ -2,7 +2,7 @@
 const CACHE_NAME = 'food-diary-v9';
 const URLS_TO_CACHE = [
   './',
-  './eddie_tracker_version9_pwa.html',
+  './index.html',
   './manifest.json'
 ];
 
